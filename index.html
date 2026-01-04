@@ -2,12 +2,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-  <title>GBL Runner — Commit Zone (Stable, Paper-Ready)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Cyber Pinball Quiz — GBL (Controlled, Fair, Mobile-Ready)</title>
   <style>
     :root{
-      --bg:#071025;
+      --bg:#070f22;
       --ink:#eaf0ff;
       --muted:#b9c6ff;
 
@@ -21,16 +21,19 @@
       --a:#7c5cff;
       --b:#33d6ff;
       --c:#ff7ad9;
-      --zone:#ffd84d;
+
+      --laneGlow: rgba(255,255,255,.18);
+      --zone: rgba(255,216,77,.60);
     }
     *{box-sizing:border-box}
     body{
-      margin:0; color:var(--ink);
+      margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);
       background:
-        radial-gradient(1000px 450px at 70% 10%, rgba(100,181,255,.18), transparent 55%),
-        radial-gradient(900px 420px at 20% 20%, rgba(124,92,255,.14), transparent 60%),
-        var(--bg);
+        radial-gradient(1100px 520px at 70% 5%, rgba(51,214,255,.16), transparent 60%),
+        radial-gradient(900px 500px at 20% 15%, rgba(124,92,255,.12), transparent 60%),
+        linear-gradient(180deg, #050a16, var(--bg));
       overflow:hidden;
     }
     .wrap{height:100dvh; display:flex; flex-direction:column;}
@@ -38,8 +41,8 @@
       padding:12px 14px 10px;
       display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap;
     }
-    .brand{display:flex; flex-direction:column; gap:2px; min-width:280px;}
-    .brand .t{font-weight:900;}
+    .brand{display:flex; flex-direction:column; gap:2px; min-width:260px;}
+    .brand .t{font-weight:950;}
     .brand .s{font-size:12px; color:var(--muted)}
     .hud{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
     .pill{
@@ -78,7 +81,7 @@
       padding:12px;
       backdrop-filter: blur(10px);
     }
-    .qCard{flex:1.2; min-height:160px; position:relative; overflow:hidden;}
+    .qCard{flex:1.15; min-height:170px; position:relative; overflow:hidden;}
     .qTitle{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
     .badge{
       font-size:12px;
@@ -89,7 +92,7 @@
       white-space:nowrap;
       user-select:none;
     }
-    .qText{font-size:16px; line-height:1.28; font-weight:900; margin-top:6px;}
+    .qText{font-size:16px; line-height:1.28; font-weight:950; margin-top:6px;}
     .choices{margin-top:10px; display:grid; gap:6px;}
     .choice{
       display:flex; gap:10px; align-items:center;
@@ -111,7 +114,6 @@
     .tag.C{background:var(--c)}
     .muted{color:var(--muted)}
 
-    /* Read pause bar */
     .readBarWrap{
       margin-top:10px;
       padding:10px;
@@ -122,7 +124,7 @@
     }
     .readLabel{
       display:flex; justify-content:space-between; align-items:center;
-      font-size:12px; color:var(--muted); font-weight:750;
+      font-size:12px; color:var(--muted); font-weight:800;
       margin-bottom:8px;
     }
     .bar{
@@ -137,7 +139,6 @@
       width:0%;
       background:linear-gradient(90deg, rgba(51,214,255,.85), rgba(124,92,255,.85));
     }
-
     .statusLine{
       margin-top:10px;
       padding:10px;
@@ -149,17 +150,16 @@
       display:none;
     }
 
-    .gameCard{flex:1.8; display:flex; flex-direction:column; gap:10px; padding:10px;}
+    .gameCard{flex:1.85; display:flex; flex-direction:column; gap:10px; padding:10px;}
     canvas{
       width:100%;
-      height:min(56dvh, 560px);
+      height:min(56dvh, 580px);
       border-radius:16px;
       border:1px solid rgba(255,255,255,.12);
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12));
       box-shadow:var(--shadow);
       touch-action:none;
     }
-
     .controls{
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -180,7 +180,6 @@
       min-height:56px;
     }
     .ctl small{font-weight:700; color:var(--muted); line-height:1.2;}
-
     .footerRow{
       display:flex; gap:10px; flex-wrap:wrap;
       justify-content:space-between; align-items:center;
@@ -206,32 +205,7 @@
     }
     .pop.good{background:rgba(57,217,138,.20)}
     .pop.bad{background:rgba(255,92,122,.18)}
-    .pop .why{display:block; margin-top:6px; font-size:12px; color:var(--muted); font-weight:750}
-
-    /* Commit buttons (only visible inside commit zone) */
-    .commitWrap{
-      position:absolute;
-      left:12px; right:12px; bottom:12px;
-      display:none;
-      gap:10px;
-      z-index:6;
-    }
-    .commitBtn{
-      flex:1;
-      border-radius:16px;
-      padding:14px 10px;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.10);
-      box-shadow:var(--shadow);
-      font-weight:950;
-      color:var(--ink);
-      cursor:pointer;
-      user-select:none;
-    }
-    .commitBtn:active{transform:translateY(1px)}
-    .commitBtn.A{border-color:rgba(124,92,255,.55)}
-    .commitBtn.B{border-color:rgba(51,214,255,.55)}
-    .commitBtn.C{border-color:rgba(255,122,217,.55)}
+    .pop .why{display:block; margin-top:6px; font-size:12px; color:var(--muted); font-weight:800}
 
     .overlay{
       position:fixed; inset:0;
@@ -243,7 +217,7 @@
       z-index:50;
     }
     .modal{
-      width:min(860px, 96vw);
+      width:min(900px, 96vw);
       background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
       border:1px solid rgba(255,255,255,.14);
       border-radius:22px;
@@ -256,9 +230,8 @@
 
     @media (max-width: 900px){
       .row{flex-direction:column}
-      canvas{height:min(52dvh, 480px);}
+      canvas{height:min(52dvh, 500px);}
       .qText{font-size:15px}
-      .commitWrap{flex-direction:column}
     }
   </style>
 </head>
@@ -266,8 +239,8 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <div class="t">GBL Runner — Commit Zone Logic (Stable Selection)</div>
-      <div class="s">Read → Navigate → Enter Commit Zone → Explicitly select A/B/C (no physics-based selection)</div>
+      <div class="t">Cyber Pinball Quiz — GBL</div>
+      <div class="s">Read → Aim & Launch → Ball enters lane A/B/C → Instant feedback (controlled trajectory, fair)</div>
     </div>
     <div class="hud">
       <div class="pill">Score: <b id="score">0</b></div>
@@ -283,8 +256,9 @@
       <section class="card qCard" aria-live="polite">
         <div class="qTitle">
           <div class="badge" id="topicBadge">Ready</div>
-          <div class="tiny muted">Selection happens only in the Commit Zone. Use buttons or keys (1/2/3 or A/B/C).</div>
+          <div class="tiny muted">Hold to charge power, drag slightly to aim, release to launch.</div>
         </div>
+
         <div class="qText" id="qText">Press Start to begin.</div>
         <div class="choices" id="choices"></div>
 
@@ -298,12 +272,6 @@
 
         <div class="statusLine" id="statusLine"></div>
 
-        <div class="commitWrap" id="commitWrap">
-          <button class="commitBtn A" id="pickA">Select A</button>
-          <button class="commitBtn B" id="pickB">Select B</button>
-          <button class="commitBtn C" id="pickC">Select C</button>
-        </div>
-
         <div class="pop" id="popup"></div>
       </section>
 
@@ -311,13 +279,13 @@
         <canvas id="c"></canvas>
 
         <div class="controls">
-          <div class="ctl" id="leftBtn" role="button" tabindex="0">◀ Move <small>← / A</small></div>
-          <div class="ctl" id="jumpBtn" role="button" tabindex="0">⤒ Jump <small>Space / ↑</small></div>
-          <div class="ctl" id="rightBtn" role="button" tabindex="0">Move ▶ <small>→ / D</small></div>
+          <div class="ctl" id="leftBtn" role="button" tabindex="0">Aim ◀ <small>←</small></div>
+          <div class="ctl" id="launchBtn" role="button" tabindex="0">Hold & Release <small>Space</small></div>
+          <div class="ctl" id="rightBtn" role="button" tabindex="0">Aim ▶ <small>→</small></div>
         </div>
 
         <div class="footerRow">
-          <div class="tiny">Tip: options are markers only. Enter the yellow Commit Zone, then choose A/B/C.</div>
+          <div class="tiny">Tip: Tap on the canvas to aim. Release to launch. The ball will fairly go to your chosen lane.</div>
           <button class="btn" id="startBtn">Start</button>
         </div>
       </section>
@@ -330,13 +298,17 @@
     <h2 id="modalTitle">How to Play</h2>
     <div id="modalBody">
       <ul>
-        <li>When a question appears, the game <b>auto-pauses</b> for a few seconds so you can read.</li>
-        <li>Then the runner moves slowly. You will see option markers A/B/C ahead.</li>
-        <li>After the markers, you will see a <b>yellow Commit Zone</b>.</li>
-        <li>Enter the Commit Zone and <b>explicitly select</b> A/B/C using buttons (mobile) or keys (<b>1/2/3</b> or <b>A/B/C</b>).</li>
-        <li>Correct = <b>+10</b>. Wrong = <b>0</b>. One attempt per question.</li>
+        <li>A question appears and the game pauses for a few seconds so you can read.</li>
+        <li>Then aim and launch the glowing “data packet” ball toward lane <b>A</b>, <b>B</b>, or <b>C</b>.</li>
+        <li>Controls:
+          <ul>
+            <li><b>Mobile / Mouse:</b> press and hold to charge power, drag slightly left/right to aim, release to launch</li>
+            <li><b>Keyboard:</b> ← / → to aim, hold Space to charge, release Space to launch</li>
+          </ul>
+        </li>
+        <li>Correct lane: <b>+10</b>. Wrong lane: <b>0</b>. One launch per question.</li>
       </ul>
-      <p class="muted">This design avoids accidental answers caused by jumping/landing physics.</p>
+      <p class="muted">This pinball is “controlled” so your intended lane is always reachable (no unfair randomness).</p>
     </div>
     <div class="row">
       <button class="btn" id="closeModal">Close</button>
@@ -346,58 +318,75 @@
 
 <script>
 /* =========================================================
-   QUESTIONS
-   Replace QUESTION_BANK with questions from your chapters.
-   IMPORTANT: Write the correct answer as "correctText"
-   (not fixed A/B/C), so we can shuffle options fairly.
+   PARTICIPANT ID (optional): add ?pid=UOU123 in URL
+   ========================================================= */
+const params = new URLSearchParams(location.search);
+const PID = params.get("pid") || "UOU-ANON";
+
+/* =========================================================
+   QUESTION BANK
+   Replace with your chapter-based MCQs.
+   IMPORTANT: store correct answer as correctText (not A/B/C fixed).
    ========================================================= */
 const QUESTION_BANK = [
-  {
-    id:"Q1", topic:"Mobile Security",
-    q:"Safest place to install apps is:",
-    options:["Official app stores","Random APK sites","Unknown message links"],
-    correctText:"Official app stores",
-    why:"Official stores reduce (not remove) malware risk."
+  { id:"Q1", topic:"Smartphone Security",
+    q:"Which practice best reduces risk from malicious apps?",
+    options:["Install only from official stores","Disable screen lock","Keep Bluetooth always ON"],
+    correctText:"Install only from official stores",
+    why:"Official stores reduce exposure to unknown, repackaged or malicious apps."
   },
-  {
-    id:"Q2", topic:"Android",
-    q:"Why enable SIM lock?",
-    options:["PIN needed after restart","Faster internet","Auto updates"],
-    correctText:"PIN needed after restart",
-    why:"SIM lock blocks SIM use without the PIN after reboot."
+  { id:"Q2", topic:"Android Security",
+    q:"Device encryption on Android primarily protects data:",
+    options:["When the device is lost or powered off","Only when Wi-Fi is on","Only inside a browser"],
+    correctText:"When the device is lost or powered off",
+    why:"Encryption protects stored data, especially if the device is stolen or offline."
   },
-  {
-    id:"Q3", topic:"Permissions",
-    q:"If an app asks unnecessary permissions:",
-    options:["Decline/uninstall","Always accept","Turn off screen lock"],
-    correctText:"Decline/uninstall",
-    why:"Unnecessary permissions can indicate data harvesting."
+  { id:"Q3", topic:"iOS Security",
+    q:"On iPhone, enabling a strong passcode improves:",
+    options:["Data protection for stored content","Camera quality","Battery capacity"],
+    correctText:"Data protection for stored content",
+    why:"A strong passcode strengthens iOS data protection mechanisms."
   },
-  {
-    id:"Q4", topic:"Messaging",
-    q:"SMS messages are generally:",
-    options:["Unencrypted","End-to-end encrypted","Encrypted by passcode"],
-    correctText:"Unencrypted",
-    why:"SMS can be vulnerable to interception."
+  { id:"Q4", topic:"Smartphone Security",
+    q:"Using public Wi-Fi is risky mainly due to:",
+    options:["Possible interception and rogue access points","Lower screen brightness","Extra storage usage"],
+    correctText:"Possible interception and rogue access points",
+    why:"Public networks can be monitored or spoofed to capture traffic and credentials."
   },
-  {
-    id:"Q5", topic:"iOS",
-    q:"iOS data protection is strongest with a:",
-    options:["Passcode","Wallpaper","Ringtone"],
-    correctText:"Passcode",
-    why:"Passcode enables iOS data protection features."
+  { id:"Q5", topic:"Android Security",
+    q:"Granting unnecessary app permissions can lead to:",
+    options:["Data leakage and privacy loss","Faster charging","Better speaker sound"],
+    correctText:"Data leakage and privacy loss",
+    why:"Excess permissions may expose contacts, location, files, or messages."
   },
-  {
-    id:"Q6", topic:"Secure chat",
-    q:"An encrypted messaging app is:",
-    options:["Signal","Any SMS app","Caller ID hide"],
-    correctText:"Signal",
-    why:"Signal supports encrypted messages and calls."
+  { id:"Q6", topic:"iOS Security",
+    q:"A key benefit of “Find My iPhone” is:",
+    options:["Locate and remotely erase a lost phone","Increase download speed","Automatically jailbreak the phone"],
+    correctText:"Locate and remotely erase a lost phone",
+    why:"Find My supports location tracking and remote wipe to protect data."
+  },
+  { id:"Q7", topic:"Smartphone Security",
+    q:"Best immediate action when you suspect a phishing link was clicked?",
+    options:["Change passwords and enable 2FA","Turn up volume","Ignore and keep using normally"],
+    correctText:"Change passwords and enable 2FA",
+    why:"Credential reset and stronger authentication limit account takeover."
+  },
+  { id:"Q8", topic:"Android Security",
+    q:"Rooting a phone generally:",
+    options:["Increases attack surface by bypassing protections","Always improves security","Only changes wallpaper features"],
+    correctText:"Increases attack surface by bypassing protections",
+    why:"Rooting disables or weakens system security controls and app sandboxing."
+  },
+  { id:"Q9", topic:"iOS Security",
+    q:"Jailbreaking an iPhone typically:",
+    options:["Reduces built-in security restrictions","Is required for encryption","Prevents all malware"],
+    correctText:"Reduces built-in security restrictions",
+    why:"Jailbreak removes Apple restrictions and can weaken the security model."
   },
 ];
 
 /* =========================================================
-   Utilities
+   Helpers
    ========================================================= */
 function shuffle(arr){
   const a = arr.slice();
@@ -407,13 +396,12 @@ function shuffle(arr){
   }
   return a;
 }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[m]));
 }
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
 /* =========================================================
    UI refs
@@ -422,31 +410,38 @@ const scoreEl = document.getElementById("score");
 const accEl   = document.getElementById("acc");
 const qnumEl  = document.getElementById("qnum");
 const qtotalEl= document.getElementById("qtotal");
+const topicBadge = document.getElementById("topicBadge");
 const qTextEl = document.getElementById("qText");
 const choicesEl = document.getElementById("choices");
-const topicBadge = document.getElementById("topicBadge");
 const popupEl = document.getElementById("popup");
-
 const readWrap = document.getElementById("readWrap");
 const readBar  = document.getElementById("readBar");
 const readSecs = document.getElementById("readSecs");
-
 const statusLine = document.getElementById("statusLine");
 
-const commitWrap = document.getElementById("commitWrap");
-const pickA = document.getElementById("pickA");
-const pickB = document.getElementById("pickB");
-const pickC = document.getElementById("pickC");
-
 const overlay = document.getElementById("overlay");
-const modalTitle = document.getElementById("modalTitle");
-const modalBody  = document.getElementById("modalBody");
-
 document.getElementById("howBtn").onclick = ()=> overlay.style.display="flex";
 document.getElementById("closeModal").onclick = ()=> overlay.style.display="none";
 
 /* =========================================================
-   Canvas
+   Game tuning
+   ========================================================= */
+const READ_PAUSE_MS = 4500;          // guaranteed reading time
+const AIM_TIME_LIMIT_MS = 16000;     // after read ends
+const FEEDBACK_MS = 950;
+const QUESTIONS_PER_RUN = 9;         // adjust
+
+// Controlled pinball physics
+const DT = 1/60;
+const BALL_R = 10;
+const MAX_POWER = 18;               // launch speed scale
+const STEER_STRENGTH = 0.085;       // attraction to chosen lane (ensures fairness)
+const DRAG = 0.992;                 // slows gradually
+const BOUNCE = 0.82;                // wall bounce
+const BUMPER_BOUNCE = 1.05;         // bumper pop (mild)
+
+/* =========================================================
+   Canvas + board geometry
    ========================================================= */
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
@@ -458,58 +453,74 @@ function fitCanvas(){
   canvas.height = Math.floor(rect.height * dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-window.addEventListener("resize", ()=>{ fitCanvas(); initSky(); resetPlayer(); });
+window.addEventListener("resize", ()=>{ fitCanvas(); initStars(); buildBoard(); resetBall(); });
 
-/* =========================================================
-   Tuning (Commit Zone Strategy)
-   ========================================================= */
-const READ_PAUSE_MS = 4500;       // guaranteed reading time
-const RUN_SPEED = 1.65;           // slow, comfortable
-const GRAVITY = 0.85;
-const JUMP_VEL = -14.0;
-const AIR_CONTROL = 0.20;
-const GROUND_CONTROL = 0.45;
-
-const QUESTION_TIMEOUT_MS = 17000; // overall question timeout (after read phase ends)
-const COMMIT_TIMEOUT_MS = 9000;    // once inside commit zone, time to select
-const FEEDBACK_MS = 950;
-
-const QUESTIONS_PER_RUN = 6;
-
-/* World layout for each question */
-const MARKER_SPREAD = 170;        // distance between A/B/C markers
-const MARKER_W = 64, MARKER_H = 38;
-const ZONE_W = 220;               // commit zone width
-const ZONE_GAP_AFTER_MARKERS = 170; // distance after last marker to commit zone
-const SAFE_LEAD_IN = 0.78;        // how far ahead to spawn sequence (relative to canvas width)
-
-/* =========================================================
-   Responsive world
-   ========================================================= */
-function getWorldMetrics(){
-  const rect = canvas.getBoundingClientRect();
-  const W = rect.width;
-  const H = rect.height;
-
-  const groundThickness = clamp(Math.round(H*0.12), 46, 72);
-  const groundY = H - groundThickness;
-
-  const playerH = clamp(Math.round(H*0.12), 56, 86);
-  const playerW = Math.round(playerH*0.72);
-
-  return {W,H,groundY,groundThickness,playerW,playerH};
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-/* =========================================================
-   Sky decor
-   ========================================================= */
 let stars=[];
-function initSky(){
-  const {W,H} = getWorldMetrics();
+function initStars(){
+  const r = canvas.getBoundingClientRect();
   stars=[];
-  for(let i=0;i<90;i++){
-    stars.push({x:Math.random()*W, y:Math.random()*H*0.70, r:0.8+Math.random()*1.6, tw:Math.random()*6.28});
+  for(let i=0;i<70;i++){
+    stars.push({x:Math.random()*r.width, y:Math.random()*r.height*0.85, r:0.8+Math.random()*1.8, t:Math.random()*6.28});
   }
+}
+
+/* Board parts (computed responsive) */
+const board = {
+  W:0,H:0,
+  pad:0,
+  laneY:0, laneH:0,
+  lanes:[],          // {key, x, w}
+  launcher:{x:0,y:0,w:0,h:0},
+  bumpers:[],        // {x,y,r}
+  walls:{left:0,right:0,top:0,bottom:0}
+};
+
+function buildBoard(){
+  const r = canvas.getBoundingClientRect();
+  board.W = r.width;
+  board.H = r.height;
+  board.pad = Math.round(Math.min(board.W, board.H) * 0.06);
+
+  board.walls = {
+    left: board.pad,
+    right: board.W - board.pad,
+    top: board.pad,
+    bottom: board.H - board.pad
+  };
+
+  // lanes at top
+  board.laneH = Math.round(board.H * 0.14);
+  board.laneY = board.walls.top + Math.round(board.H * 0.02);
+  const laneAreaW = board.walls.right - board.walls.left;
+  const laneW = laneAreaW / 3;
+
+  board.lanes = [
+    {key:"A", x:board.walls.left + laneW*0, w:laneW},
+    {key:"B", x:board.walls.left + laneW*1, w:laneW},
+    {key:"C", x:board.walls.left + laneW*2, w:laneW},
+  ];
+
+  // launcher at bottom center
+  const lw = Math.round(laneAreaW * 0.25);
+  const lh = Math.round(board.H * 0.16);
+  board.launcher = {
+    x: board.W/2 - lw/2,
+    y: board.walls.bottom - lh - Math.round(board.H*0.02),
+    w: lw,
+    h: lh
+  };
+
+  // mild bumpers (decor + tiny bounce) away from lane gates
+  const midY = board.laneY + board.laneH + (board.H*0.18);
+  board.bumpers = [
+    {x: board.W*0.30, y: midY, r: 18},
+    {x: board.W*0.50, y: midY + 50, r: 20},
+    {x: board.W*0.70, y: midY, r: 18},
+  ];
 }
 
 /* =========================================================
@@ -517,38 +528,29 @@ function initSky(){
    ========================================================= */
 const state = {
   running:false,
-  phase:"menu", // menu | read | navigate | commit | feedback | end
-  score:0,
-  correct:0,
-  attempted:0,
+  phase:"menu", // menu | read | aim | flight | feedback | end
+  score:0, correct:0, attempted:0,
+  questions:[], qIndex:0, current:null,
 
-  questions:[],        // prepared questions with balanced A/B/C distribution
-  qIndex:0,
-  current:null,
+  // timing
+  readStart:0, readUntil:0,
+  aimStart:0, aimUntil:0,
+  decisionStart:0,
 
-  cameraX:0,
-  worldX:0,
+  // launch intent
+  aimX:0,              // -1..+1
+  power:0,             // 0..1
+  charging:false,
+  chosenLane:null,     // "A"/"B"/"C" determined at release
 
-  // timings
-  readStart:0,
-  readUntil:0,
-  decisionStart:0,      // time when read ends (start timing)
-  questionTimeoutAt:0,  // absolute time when question expires
-
-  // sequence elements in world space
-  markers:[],           // 3 markers A/B/C (non-interactive)
-  commitZone:null,      // commit zone rectangle
-
-  // commit
-  inCommitZone:false,
-  commitUnlockAt:0,     // moment we entered commit zone
-  committed:false,
+  // ball
+  ball:{x:0,y:0,vx:0,vy:0,active:false,trail:[]},
 
   // fx
-  floatPop:[],
   particles:[],
+  floatPop:[],
 
-  // logging
+  // logs
   log:[]
 };
 
@@ -560,137 +562,61 @@ function updateHUD(){
   qtotalEl.textContent = String(state.questions.length);
 }
 
-/* =========================================================
-   Player
-   ========================================================= */
-const player = {
-  x:120, y:0,
-  w:44, h:64,
-  vx:0, vy:0,
-  onGround:false,
-  t:0
-};
+function setStatus(text, show=true){
+  statusLine.textContent = text;
+  statusLine.style.display = show ? "block" : "none";
+}
 
-function resetPlayer(){
-  const m = getWorldMetrics();
-  player.w = m.playerW;
-  player.h = m.playerH;
-  player.x = Math.round(m.W*0.25);
-  player.y = m.groundY - player.h;
-  player.vx = 0;
-  player.vy = 0;
-  player.onGround = true;
-  player.t = 0;
-  state.worldX = 0;
-  state.cameraX = 0;
+function showPopup(ok, correctKey, why){
+  popupEl.className = "pop " + (ok ? "good" : "bad");
+  popupEl.style.display = "block";
+  popupEl.innerHTML = (ok ? "✅ Correct! (+10)" : "❌ Wrong!") +
+    `<span class="why">Correct: ${correctKey}. ${escapeHtml(why)}</span>`;
+  setTimeout(()=> popupEl.style.display="none", FEEDBACK_MS);
 }
 
 /* =========================================================
-   Input
-   ========================================================= */
-const input = {left:false, right:false, jump:false};
-
-window.addEventListener("keydown",(e)=>{
-  const k=e.code;
-  if(["ArrowLeft","ArrowRight","ArrowUp","Space","KeyA","KeyD","Digit1","Digit2","Digit3","KeyB","KeyC","Enter"].includes(k)) e.preventDefault();
-
-  // movement
-  if(k==="ArrowLeft"||k==="KeyA") input.left=true;
-  if(k==="ArrowRight"||k==="KeyD") input.right=true;
-  if(k==="ArrowUp"||k==="Space") input.jump=true;
-
-  // commit selection keys (only active in commit phase)
-  if(state.phase === "commit" && state.inCommitZone && !state.committed){
-    if(k==="Digit1" || k==="KeyA") commitAnswer("A");
-    if(k==="Digit2" || k==="KeyB") commitAnswer("B");
-    if(k==="Digit3" || k==="KeyC") commitAnswer("C");
-  }
-});
-window.addEventListener("keyup",(e)=>{
-  const k=e.code;
-  if(k==="ArrowLeft"||k==="KeyA") input.left=false;
-  if(k==="ArrowRight"||k==="KeyD") input.right=false;
-});
-
-function bindHold(btn, onDown, onUp){
-  btn.addEventListener("pointerdown",(e)=>{ e.preventDefault(); onDown(); });
-  btn.addEventListener("pointerup",(e)=>{ e.preventDefault(); onUp(); });
-  btn.addEventListener("pointercancel",(e)=>{ e.preventDefault(); onUp(); });
-}
-bindHold(document.getElementById("leftBtn"), ()=>input.left=true, ()=>input.left=false);
-bindHold(document.getElementById("rightBtn"),()=>input.right=true,()=>input.right=false);
-document.getElementById("jumpBtn").addEventListener("pointerdown",(e)=>{ e.preventDefault(); input.jump=true; });
-
-// commit buttons
-pickA.onclick = ()=> commitAnswer("A");
-pickB.onclick = ()=> commitAnswer("B");
-pickC.onclick = ()=> commitAnswer("C");
-
-/* =========================================================
-   Question preparation: shuffle options + balance correct letters
+   Question prep: shuffle options + balance correct letters
    ========================================================= */
 function prepareQuestionsBalanced(){
-  // sample questions
   const selected = shuffle(QUESTION_BANK).slice(0, Math.min(QUESTIONS_PER_RUN, QUESTION_BANK.length));
-
-  // target distribution A/B/C close to equal
   const n = selected.length;
-  const targets = {A:0, B:0, C:0};
-  // simple equal split, remainder assigned randomly
+
   const base = Math.floor(n/3);
-  targets.A = base; targets.B = base; targets.C = base;
+  const targets = {A:base, B:base, C:base};
   let rem = n - 3*base;
-  const letters = shuffle(["A","B","C"]);
-  for(let i=0;i<rem;i++) targets[letters[i]]++;
+  const order = shuffle(["A","B","C"]);
+  for(let i=0;i<rem;i++) targets[order[i]]++;
 
-  const used = {A:0, B:0, C:0};
+  const used = {A:0,B:0,C:0};
 
-  const prepared = selected.map((qObj, idx) => {
-    const opts = qObj.options.slice();
-    // shuffle options a few times until we can assign desired correct letter
-    let best = null;
+  return selected.map(q0=>{
+    const opts = q0.options.slice();
+    let picked = null;
 
-    for(let tries=0; tries<50; tries++){
+    for(let tries=0; tries<80; tries++){
       const sh = shuffle(opts);
-
-      // map to A/B/C
       const map = {A:sh[0], B:sh[1], C:sh[2]};
+      const correct = (map.A===q0.correctText) ? "A" : (map.B===q0.correctText) ? "B" : "C";
 
-      // compute correct letter
-      const correctLetter = (map.A === qObj.correctText) ? "A"
-                           : (map.B === qObj.correctText) ? "B"
-                           : "C";
-
-      // choose if we still need this letter according to targets
-      if(used[correctLetter] < targets[correctLetter]){
-        best = {map, correctLetter, shown: sh};
+      if(used[correct] < targets[correct]){
+        picked = {map, correct};
         break;
       }
-      // otherwise keep a fallback
-      if(!best) best = {map, correctLetter, shown: sh};
+      if(!picked) picked = {map, correct};
     }
-
-    used[best.correctLetter]++;
+    used[picked.correct]++;
 
     return {
-      id: qObj.id,
-      topic: qObj.topic,
-      q: qObj.q,
-      A: best.map.A,
-      B: best.map.B,
-      C: best.map.C,
-      correct: best.correctLetter,
-      correctText: qObj.correctText,
-      why: qObj.why
+      id:q0.id, topic:q0.topic, q:q0.q,
+      A:picked.map.A, B:picked.map.B, C:picked.map.C,
+      correct:picked.correct,
+      correctText:q0.correctText,
+      why:q0.why
     };
   });
-
-  return prepared;
 }
 
-/* =========================================================
-   Question UI
-   ========================================================= */
 function renderQuestion(q){
   state.current = q;
   topicBadge.textContent = q.topic;
@@ -702,125 +628,173 @@ function renderQuestion(q){
   `;
 }
 
-function showPopup(ok, correctKey, why){
-  popupEl.className = "pop " + (ok ? "good" : "bad");
-  popupEl.style.display = "block";
-  popupEl.innerHTML = (ok ? "✅ Correct! (+10)" : "❌ Wrong!") +
-    `<span class="why">Correct: ${correctKey}. ${escapeHtml(why)}</span>`;
-  setTimeout(()=> popupEl.style.display="none", FEEDBACK_MS);
+/* =========================================================
+   Ball / Launch logic
+   ========================================================= */
+function resetBall(){
+  const L = board.launcher;
+  state.ball.x = L.x + L.w/2;
+  state.ball.y = L.y + L.h - 18;
+  state.ball.vx = 0;
+  state.ball.vy = 0;
+  state.ball.active = false;
+  state.ball.trail = [];
+  state.chosenLane = null;
+  state.aimX = 0;
+  state.power = 0;
+  state.charging = false;
 }
 
-function setStatus(text, show=true){
-  statusLine.textContent = text;
-  statusLine.style.display = show ? "block" : "none";
+function laneFromAim(aimX){
+  // aimX in [-1..+1]
+  if(aimX < -0.22) return "A";
+  if(aimX >  0.22) return "C";
+  return "B";
+}
+
+function laneCenterX(key){
+  const lane = board.lanes.find(l=>l.key===key);
+  return lane.x + lane.w/2;
+}
+
+function launchBall(){
+  if(state.phase !== "aim") return;
+
+  // determine intent at release
+  state.chosenLane = laneFromAim(state.aimX);
+
+  const speed = 8 + (MAX_POWER-8) * state.power; // min + scaled
+  // base direction upwards, small horizontal based on aim
+  const dx = clamp(state.aimX, -1, 1);
+  state.ball.vx = dx * (speed * 0.55);
+  state.ball.vy = -speed;
+
+  state.ball.active = true;
+  state.phase = "flight";
+
+  setStatus(`Launched toward lane ${state.chosenLane}.`, true);
 }
 
 /* =========================================================
-   World sequence for each question
-   Markers (A/B/C) are visual only.
-   Commit Zone is neutral gate used to unlock selection.
+   Input (mouse/touch + keyboard fallback)
    ========================================================= */
-function buildSequenceForQuestion(){
-  const m = getWorldMetrics();
-  const baseX = state.worldX + Math.round(m.W * SAFE_LEAD_IN);
+const input = {left:false, right:false, spaceDown:false};
 
-  const y = m.groundY - MARKER_H;
+window.addEventListener("keydown",(e)=>{
+  const k=e.code;
+  if(["ArrowLeft","ArrowRight","Space"].includes(k)) e.preventDefault();
+  if(k==="ArrowLeft") input.left=true;
+  if(k==="ArrowRight") input.right=true;
 
-  state.markers = [
-    {key:"A", x: baseX + 0*MARKER_SPREAD, y, w:MARKER_W, h:MARKER_H},
-    {key:"B", x: baseX + 1*MARKER_SPREAD, y, w:MARKER_W, h:MARKER_H},
-    {key:"C", x: baseX + 2*MARKER_SPREAD, y, w:MARKER_W, h:MARKER_H},
-  ];
+  if(k==="Space"){
+    if(state.phase==="aim" && !input.spaceDown){
+      input.spaceDown = true;
+      startCharging();
+    }
+  }
+});
+window.addEventListener("keyup",(e)=>{
+  const k=e.code;
+  if(k==="ArrowLeft") input.left=false;
+  if(k==="ArrowRight") input.right=false;
 
-  const last = state.markers[state.markers.length-1];
-  const zoneX = last.x + last.w + ZONE_GAP_AFTER_MARKERS;
-  const zoneY = m.groundY - 64;
+  if(k==="Space"){
+    if(state.phase==="aim" && input.spaceDown){
+      input.spaceDown = false;
+      stopChargingAndLaunch();
+    }
+  }
+});
 
-  state.commitZone = {
-    x: zoneX,
-    y: zoneY,
-    w: ZONE_W,
-    h: 64
-  };
+function bindHold(btn, onDown, onUp){
+  btn.addEventListener("pointerdown",(e)=>{ e.preventDefault(); onDown(); });
+  btn.addEventListener("pointerup",(e)=>{ e.preventDefault(); onUp(); });
+  btn.addEventListener("pointercancel",(e)=>{ e.preventDefault(); onUp(); });
+}
+bindHold(document.getElementById("leftBtn"), ()=>input.left=true, ()=>input.left=false);
+bindHold(document.getElementById("rightBtn"),()=>input.right=true,()=>input.right=false);
+
+// Launch button: hold/release
+bindHold(document.getElementById("launchBtn"), ()=>startCharging(), ()=>stopChargingAndLaunch());
+
+function pointerPos(ev){
+  const rect = canvas.getBoundingClientRect();
+  const x = (ev.clientX - rect.left);
+  const y = (ev.clientY - rect.top);
+  return {x,y};
+}
+
+canvas.addEventListener("pointerdown",(e)=>{
+  canvas.setPointerCapture(e.pointerId);
+  if(state.phase !== "aim") return;
+
+  const p = pointerPos(e);
+  // only charge if near launcher area (reduces accidental)
+  const L = board.launcher;
+  const inLauncher = (p.x >= L.x-30 && p.x <= L.x+L.w+30 && p.y >= L.y-20 && p.y <= L.y+L.h+30);
+
+  // allow aiming even if not charging
+  updateAimFromX(p.x);
+
+  if(inLauncher){
+    startCharging();
+  }
+});
+canvas.addEventListener("pointermove",(e)=>{
+  if(state.phase !== "aim") return;
+  const p = pointerPos(e);
+  updateAimFromX(p.x);
+});
+canvas.addEventListener("pointerup",(e)=>{
+  if(state.phase !== "aim") return;
+  if(state.charging) stopChargingAndLaunch();
+});
+
+function updateAimFromX(x){
+  const mid = board.W/2;
+  const span = board.W*0.34;
+  state.aimX = clamp((x - mid)/span, -1, 1);
+}
+
+function startCharging(){
+  if(state.phase !== "aim") return;
+  state.charging = true;
+}
+function stopChargingAndLaunch(){
+  if(state.phase !== "aim") return;
+  if(!state.charging) return;
+  state.charging = false;
+  launchBall();
 }
 
 /* =========================================================
-   Commit Zone handling
+   Answer handling + logging
    ========================================================= */
-function playerWorldRect(){
-  const pwx = state.worldX + player.x;
-  return {x:pwx, y:player.y, w:player.w, h:player.h};
-}
-function rectOverlap(a,b){
-  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
-}
-
-function updateCommitZone(now){
-  if(state.phase !== "navigate" && state.phase !== "commit") return;
-  if(!state.commitZone) return;
-
-  const pr = playerWorldRect();
-  const inZone = rectOverlap(pr, state.commitZone);
-
-  if(inZone && !state.inCommitZone){
-    state.inCommitZone = true;
-    state.phase = "commit";
-    state.commitUnlockAt = now;
-    commitWrap.style.display = "flex";
-    setStatus("You are in the COMMIT ZONE. Select A/B/C now (keys 1/2/3 or A/B/C).", true);
-
-    // auto-timeout inside commit zone
-    setTimeout(()=>{
-      if(state.phase === "commit" && state.inCommitZone && !state.committed){
-        noAnswer("No selection in Commit Zone.");
-      }
-    }, COMMIT_TIMEOUT_MS);
-  }
-
-  // if learner leaves commit zone without committing, keep them in commit phase but hide buttons
-  // (They must re-enter zone to select.)
-  if(!inZone && state.inCommitZone && !state.committed){
-    state.inCommitZone = false;
-    commitWrap.style.display = "none";
-    setStatus("Move back into the yellow COMMIT ZONE to select A/B/C.", true);
-  }
-
-  // if committed, hide UI
-  if(state.committed){
-    commitWrap.style.display = "none";
-  }
-}
-
-function commitAnswer(letter){
-  if(state.phase !== "commit") return;
-  if(!state.inCommitZone) return;
-  if(state.committed) return;
-
-  state.committed = true;
-
+function scoreForLane(selectedLane){
   const q = state.current;
-  const ok = (letter === q.correct);
+  const ok = (selectedLane === q.correct);
 
   state.attempted++;
   if(ok){
     state.correct++;
     state.score += 10;
-    addFloatPop(state.worldX + player.x + player.w/2, player.y - 14, "+10", "rgba(57,217,138,.95)", 700);
-    addBurst(state.worldX + player.x + player.w/2, player.y + 10, "rgba(57,217,138,.95)");
+    addFloatPop(board.W*0.5, board.H*0.52, "+10", "rgba(57,217,138,.95)", 700);
+    burst(board.W*0.5, board.H*0.48, "rgba(57,217,138,.95)");
   }else{
-    addFloatPop(state.worldX + player.x + player.w/2, player.y - 14, "0", "rgba(255,255,255,.85)", 650);
-    addBurst(state.worldX + player.x + player.w/2, player.y + 10, "rgba(255,92,122,.95)");
+    addFloatPop(board.W*0.5, board.H*0.52, "0", "rgba(255,255,255,.85)", 650);
+    burst(board.W*0.5, board.H*0.48, "rgba(255,92,122,.95)");
   }
 
-  // response time measured from end of read phase
   const rt = Math.max(0, Math.round(performance.now() - state.decisionStart));
 
   state.log.push({
     ts: new Date().toISOString(),
+    pid: PID,
     qid: q.id,
     topic: q.topic,
     option_order: `A:${q.A} | B:${q.B} | C:${q.C}`,
-    selected: letter,
+    selected: selectedLane,
+    intended: state.chosenLane || "NA",
     correct: q.correct,
     is_correct: ok ? 1 : 0,
     response_ms: rt,
@@ -830,38 +804,33 @@ function commitAnswer(letter){
   updateHUD();
   showPopup(ok, q.correct, q.why);
 
-  setStatus("Feedback shown. Next question loading…", true);
-
   state.phase = "feedback";
   setTimeout(()=> nextQuestion(), FEEDBACK_MS);
 }
 
 function noAnswer(reason){
-  if(state.phase === "feedback") return;
-  if(state.committed) return;
+  if(state.phase === "feedback" || state.phase === "end") return;
 
-  state.committed = true; // lock
   state.attempted++;
-  updateHUD();
-
   const q = state.current;
   const rt = Math.max(0, Math.round(performance.now() - state.decisionStart));
 
   state.log.push({
     ts: new Date().toISOString(),
+    pid: PID,
     qid: q.id,
     topic: q.topic,
     option_order: `A:${q.A} | B:${q.B} | C:${q.C}`,
     selected: "NA",
+    intended: "NA",
     correct: q.correct,
     is_correct: 0,
     response_ms: rt,
     score_after: state.score
   });
 
+  updateHUD();
   showPopup(false, q.correct, reason || "No answer recorded.");
-  setStatus("No answer. Next question loading…", true);
-
   state.phase = "feedback";
   setTimeout(()=> nextQuestion(), FEEDBACK_MS);
 }
@@ -869,27 +838,155 @@ function noAnswer(reason){
 /* =========================================================
    VFX
    ========================================================= */
-function addFloatPop(worldX, y, text, color, ms=650){
-  state.floatPop.push({x:worldX, y, text, color, until: performance.now()+ms});
+function addFloatPop(x, y, text, color, ms=650){
+  state.floatPop.push({x,y,text,color,until:performance.now()+ms});
 }
-function addBurst(worldX, y, color){
-  for(let i=0;i<14;i++){
-    const ang = Math.random()*Math.PI*2;
-    const sp = 1.5 + Math.random()*2.6;
+function burst(x,y,color){
+  for(let i=0;i<18;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = 1.6 + Math.random()*3.2;
     state.particles.push({
-      x:worldX, y,
-      vx: Math.cos(ang)*sp,
-      vy: Math.sin(ang)*sp - 1.2,
-      born: performance.now(),
-      life: 520 + Math.random()*260,
-      color,
-      r: 1.6 + Math.random()*2.4
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-1.2,
+      born:performance.now(), life:520+Math.random()*300,
+      color, r:1.6+Math.random()*2.4
     });
   }
 }
 
 /* =========================================================
-   Drawing helpers
+   Simulation step
+   ========================================================= */
+function stepAim(now){
+  // keyboard aim adjust
+  if(input.left) state.aimX = clamp(state.aimX - 0.03, -1, 1);
+  if(input.right) state.aimX = clamp(state.aimX + 0.03, -1, 1);
+
+  // charging power
+  if(state.charging){
+    state.power = clamp(state.power + 0.015, 0, 1);
+  }else{
+    // small decay to avoid accidental full power
+    state.power = clamp(state.power - 0.010, 0, 1);
+  }
+
+  // timeout after read
+  if(performance.now() >= state.aimUntil){
+    noAnswer("Time expired (no launch).");
+  }
+}
+
+function collideWalls(){
+  const b = state.ball;
+  const W = board.walls;
+
+  if(b.x - BALL_R < W.left){
+    b.x = W.left + BALL_R;
+    b.vx = Math.abs(b.vx) * BOUNCE;
+  }
+  if(b.x + BALL_R > W.right){
+    b.x = W.right - BALL_R;
+    b.vx = -Math.abs(b.vx) * BOUNCE;
+  }
+  if(b.y - BALL_R < W.top){
+    b.y = W.top + BALL_R;
+    b.vy = Math.abs(b.vy) * BOUNCE;
+  }
+  if(b.y + BALL_R > W.bottom){
+    // fell back to bottom without choosing lane: NA
+    b.y = W.bottom - BALL_R;
+    b.vy *= -0.3;
+    b.vx *= 0.6;
+    // if it has been long, treat as NA
+    noAnswer("Ball did not enter any lane.");
+  }
+}
+
+function collideBumpers(){
+  const b = state.ball;
+  for(const bm of board.bumpers){
+    const dx = b.x - bm.x;
+    const dy = b.y - bm.y;
+    const dist = Math.hypot(dx,dy);
+    const minD = BALL_R + bm.r;
+    if(dist < minD){
+      // push out
+      const nx = dx / (dist || 1);
+      const ny = dy / (dist || 1);
+      b.x = bm.x + nx * (minD + 0.5);
+      b.y = bm.y + ny * (minD + 0.5);
+
+      // reflect velocity
+      const dot = b.vx*nx + b.vy*ny;
+      b.vx = (b.vx - 2*dot*nx) * BUMPER_BOUNCE;
+      b.vy = (b.vy - 2*dot*ny) * BUMPER_BOUNCE;
+
+      burst(bm.x, bm.y, "rgba(51,214,255,.75)");
+    }
+  }
+}
+
+function checkLaneEntry(){
+  const b = state.ball;
+  const laneY0 = board.laneY;
+  const laneY1 = board.laneY + board.laneH;
+
+  // lane gate region
+  if(b.y - BALL_R <= laneY1 && b.y + BALL_R >= laneY0){
+    // determine which lane by x
+    for(const lane of board.lanes){
+      if(b.x >= lane.x && b.x <= lane.x + lane.w){
+        // lane entered
+        state.ball.active = false;
+        burst(b.x, b.y, "rgba(255,255,255,.85)");
+        scoreForLane(lane.key);
+        break;
+      }
+    }
+  }
+}
+
+function steerTowardChosenLane(){
+  const b = state.ball;
+  if(!state.chosenLane) return;
+
+  // attraction to chosen lane center (gentle, prevents unfair drift)
+  const targetX = laneCenterX(state.chosenLane);
+  const dx = targetX - b.x;
+  b.vx += dx * STEER_STRENGTH * 0.0028; // tiny influence each step
+
+  // keep upward tendency so it reaches lanes
+  // (prevents shallow shots that hover)
+  if(b.vy > -2) b.vy -= 0.06;
+}
+
+function stepFlight(){
+  const b = state.ball;
+  if(!b.active) return;
+
+  // mild steering for fairness
+  steerTowardChosenLane();
+
+  // integrate
+  b.x += b.vx;
+  b.y += b.vy;
+
+  // drag
+  b.vx *= DRAG;
+  b.vy *= DRAG;
+
+  // walls + bumpers
+  collideWalls();
+  collideBumpers();
+
+  // trail
+  b.trail.push({x:b.x,y:b.y, t:performance.now()});
+  if(b.trail.length > 18) b.trail.shift();
+
+  checkLaneEntry();
+}
+
+/* =========================================================
+   Drawing
    ========================================================= */
 function roundRect(x,y,w,h,r){
   ctx.beginPath();
@@ -901,353 +998,270 @@ function roundRect(x,y,w,h,r){
   ctx.closePath();
 }
 
-function drawSky(now, W, H){
+function drawStars(now){
+  const r = canvas.getBoundingClientRect();
   for(const s of stars){
-    const tw = 0.45 + 0.55*Math.sin(now/700 + s.tw);
-    ctx.globalAlpha = 0.25 + tw*0.65;
+    const tw = 0.45 + 0.55*Math.sin(now/700 + s.t);
+    ctx.globalAlpha = 0.18 + tw*0.60;
     ctx.fillStyle = "rgba(255,255,255,.95)";
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
+}
 
-  ctx.globalAlpha = 0.18;
-  ctx.fillStyle = "rgba(100,181,255,.9)";
-  ctx.beginPath();
-  ctx.ellipse(W*0.15, H*0.95, W*0.55, H*0.55, 0, 0, Math.PI*2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(W*0.92, H*1.02, W*0.55, H*0.45, 0, 0, Math.PI*2);
+function drawBoardFrame(){
+  const W = board.W, H = board.H;
+  const pad = board.pad;
+
+  // outer glow
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = "rgba(124,92,255,.45)";
+  roundRect(pad-8, pad-8, W-2*(pad-8), H-2*(pad-8), 20);
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  const g = ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgba(255,255,255,.06)");
-  g.addColorStop(0.55,"rgba(255,255,255,.00)");
-  ctx.fillStyle=g;
-  ctx.fillRect(0,0,W,H);
-}
-
-function drawGround(W, groundY, thick){
-  const base = ctx.createLinearGradient(0, groundY, 0, groundY+thick);
-  base.addColorStop(0, "rgba(46,101,196,.92)");
-  base.addColorStop(1, "rgba(20,35,74,.92)");
-  ctx.fillStyle = base;
-  roundRect(0, groundY, W, thick, 16);
+  // inner frame
+  const g = ctx.createLinearGradient(0, pad, 0, H-pad);
+  g.addColorStop(0,"rgba(255,255,255,.08)");
+  g.addColorStop(1,"rgba(0,0,0,.18)");
+  ctx.fillStyle = g;
+  roundRect(pad, pad, W-2*pad, H-2*pad, 18);
   ctx.fill();
 
-  ctx.globalAlpha = 0.12;
-  ctx.fillStyle = "white";
-  for(let x=16; x<W; x+=34){
-    ctx.fillRect(x, groundY+18, 14, 10);
+  // subtle grid
+  ctx.globalAlpha = 0.10;
+  ctx.strokeStyle = "rgba(255,255,255,.45)";
+  ctx.lineWidth = 1;
+  for(let x=pad+10; x<W-pad; x+=28){
+    ctx.beginPath(); ctx.moveTo(x,pad+10); ctx.lineTo(x,H-pad-10); ctx.stroke();
+  }
+  for(let y=pad+10; y<H-pad; y+=28){
+    ctx.beginPath(); ctx.moveTo(pad+10,y); ctx.lineTo(W-pad-10,y); ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }
 
-function drawPlayer(now){
-  player.t += 0.12 + Math.min(0.20, Math.abs(player.vx)*0.08);
-  const x = player.x, y = player.y, w = player.w, h = player.h;
+function drawLanes(now){
+  const laneY = board.laneY;
+  const laneH = board.laneH;
 
-  // shadow
-  ctx.fillStyle="rgba(0,0,0,.30)";
-  ctx.beginPath();
-  ctx.ellipse(x+w*0.5, y+h+10, w*0.42, 6, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  // helmet
-  const headR = Math.max(14, w*0.45);
-  const hx = x + w*0.5;
-  const hy = y + h*0.28;
-
-  const headGrad = ctx.createLinearGradient(hx-headR, hy-headR, hx+headR, hy+headR);
-  headGrad.addColorStop(0,"rgba(255,255,255,.98)");
-  headGrad.addColorStop(1,"rgba(170,210,255,.85)");
-  ctx.fillStyle = headGrad;
-  ctx.beginPath();
-  ctx.arc(hx, hy, headR, 0, Math.PI*2);
-  ctx.fill();
-
-  // visor
-  const vg = ctx.createLinearGradient(hx-headR*0.6, hy-headR*0.2, hx+headR*0.6, hy+headR*0.4);
-  vg.addColorStop(0,"rgba(51,214,255,.70)");
-  vg.addColorStop(1,"rgba(124,92,255,.55)");
-  ctx.fillStyle = vg;
-  roundRect(hx-headR*0.62, hy-headR*0.18, headR*1.24, headR*0.56, 10);
-  ctx.fill();
-
-  // torso
-  const bodyTop = y + h*0.42;
-  const bodyH = h*0.52;
-  const bodyGrad = ctx.createLinearGradient(x, bodyTop, x, bodyTop+bodyH);
-  bodyGrad.addColorStop(0,"rgba(235,245,255,.95)");
-  bodyGrad.addColorStop(1,"rgba(150,195,255,.80)");
-  ctx.fillStyle = bodyGrad;
-  roundRect(x+w*0.10, bodyTop, w*0.80, bodyH, 16);
-  ctx.fill();
-
-  // belt
-  ctx.globalAlpha = 0.55;
-  ctx.fillStyle="rgba(7,16,37,.92)";
-  roundRect(x+w*0.18, bodyTop+bodyH*0.45, w*0.64, 8, 6);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-
-  // arms & legs
-  const armSwing = Math.sin(player.t)*6;
-  ctx.strokeStyle="rgba(255,255,255,.85)";
-  ctx.lineWidth = Math.max(5, w*0.14);
-  ctx.lineCap="round";
-  ctx.beginPath();
-  ctx.moveTo(x+w*0.18, bodyTop+bodyH*0.22);
-  ctx.lineTo(x+w*0.10, bodyTop+bodyH*0.40 + armSwing*0.10);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x+w*0.82, bodyTop+bodyH*0.22);
-  ctx.lineTo(x+w*0.90, bodyTop+bodyH*0.40 - armSwing*0.10);
-  ctx.stroke();
-
-  const step = Math.sin(player.t)*7;
-  ctx.strokeStyle="rgba(255,255,255,.90)";
-  ctx.lineWidth = Math.max(6, w*0.16);
-  ctx.beginPath();
-  ctx.moveTo(x+w*0.36, y+h-6);
-  ctx.lineTo(x+w*0.36 + step*0.45, y+h+10);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x+w*0.64, y+h-6);
-  ctx.lineTo(x+w*0.64 - step*0.45, y+h+10);
-  ctx.stroke();
-
-  // outline
-  ctx.strokeStyle="rgba(100,181,255,.55)";
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.arc(hx, hy, headR, 0, Math.PI*2);
-  ctx.stroke();
-  roundRect(x+w*0.10, bodyTop, w*0.80, bodyH, 16);
-  ctx.stroke();
-}
-
-function drawMarkers(){
-  const cam = state.cameraX;
-
-  for(const mk of state.markers){
-    const sx = mk.x - cam;
-    const sy = mk.y;
-
-    // identical look for all markers (no hint)
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = "rgba(255,255,255,.45)";
-    roundRect(sx-6, sy-6, mk.w+12, mk.h+12, 14);
+  for(const lane of board.lanes){
+    const pulse = 0.35 + 0.25*Math.sin(now/240 + (lane.key.charCodeAt(0)%7));
+    // glow
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = "rgba(255,255,255,.12)";
+    roundRect(lane.x+6, laneY+6, lane.w-12, laneH-12, 16);
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    const grad = ctx.createLinearGradient(sx,sy,sx,sy+mk.h);
-    grad.addColorStop(0, "rgba(255,255,255,.16)");
-    grad.addColorStop(1, "rgba(0,0,0,.18)");
-    ctx.fillStyle = grad;
-    roundRect(sx, sy, mk.w, mk.h, 12);
-    ctx.fill();
-
-    ctx.globalAlpha = 0.55;
-    ctx.strokeStyle = "rgba(255,255,255,.55)";
+    // border
+    ctx.strokeStyle = "rgba(255,255,255,.22)";
     ctx.lineWidth = 2;
-    roundRect(sx+3, sy+3, mk.w-6, mk.h-6, 10);
+    roundRect(lane.x+8, laneY+8, lane.w-16, laneH-16, 16);
     ctx.stroke();
-    ctx.globalAlpha = 1;
 
     // label
-    ctx.fillStyle = "rgba(234,240,255,.95)";
-    ctx.font = "950 18px system-ui,Segoe UI,Arial";
-    ctx.fillText(mk.key, sx + mk.w/2 - 6, sy + mk.h/2 + 6);
-  }
-}
-
-function drawCommitZone(now){
-  if(!state.commitZone) return;
-  const cam = state.cameraX;
-  const z = state.commitZone;
-  const sx = z.x - cam, sy = z.y;
-
-  // pulsing glow
-  const pulse = 0.35 + 0.25*Math.sin(now/220);
-  ctx.globalAlpha = pulse;
-  ctx.fillStyle = "rgba(255,216,77,.55)";
-  roundRect(sx-8, sy-8, z.w+16, z.h+16, 16);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-
-  // zone body
-  const g = ctx.createLinearGradient(sx,sy,sx,sy+z.h);
-  g.addColorStop(0, "rgba(255,216,77,.38)");
-  g.addColorStop(1, "rgba(0,0,0,.14)");
-  ctx.fillStyle = g;
-  roundRect(sx, sy, z.w, z.h, 14);
-  ctx.fill();
-
-  ctx.strokeStyle = "rgba(255,216,77,.90)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6,6]);
-  roundRect(sx+2, sy+2, z.w-4, z.h-4, 12);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  ctx.fillStyle = "rgba(7,16,37,.92)";
-  ctx.font = "950 12px system-ui,Segoe UI,Arial";
-  ctx.fillText("COMMIT ZONE", sx + 14, sy + z.h/2 + 4);
-}
-
-function drawFloatPops(now){
-  state.floatPop = state.floatPop.filter(p => now < p.until);
-  for(const p of state.floatPop){
-    const t = 1 - ((p.until - now)/650);
-    const sx = (p.x - state.cameraX);
-    ctx.globalAlpha = 1 - t;
-    ctx.fillStyle = p.color;
-    ctx.font = "900 14px system-ui,Segoe UI,Arial";
-    ctx.fillText(p.text, sx, p.y - t*18);
+    const color = lane.key==="A" ? cssVar("--a") : lane.key==="B" ? cssVar("--b") : cssVar("--c");
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.90;
+    ctx.font = "950 22px system-ui,Segoe UI,Arial";
+    ctx.fillText(lane.key, lane.x + lane.w/2 - 7, laneY + laneH/2 + 8);
     ctx.globalAlpha = 1;
   }
 }
 
-function drawParticles(now){
+function drawBumpers(){
+  for(const bm of board.bumpers){
+    ctx.globalAlpha = 0.20;
+    ctx.fillStyle = "rgba(51,214,255,.9)";
+    ctx.beginPath();
+    ctx.arc(bm.x, bm.y, bm.r+10, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+    const g = ctx.createRadialGradient(bm.x-6, bm.y-6, 2, bm.x, bm.y, bm.r);
+    g.addColorStop(0,"rgba(255,255,255,.40)");
+    g.addColorStop(1,"rgba(51,214,255,.08)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(bm.x, bm.y, bm.r, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,.18)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(bm.x, bm.y, bm.r, 0, Math.PI*2);
+    ctx.stroke();
+  }
+}
+
+function drawLauncher(){
+  const L = board.launcher;
+
+  // base
+  ctx.globalAlpha = 1;
+  const g = ctx.createLinearGradient(L.x, L.y, L.x, L.y+L.h);
+  g.addColorStop(0,"rgba(255,255,255,.10)");
+  g.addColorStop(1,"rgba(0,0,0,.20)");
+  ctx.fillStyle = g;
+  roundRect(L.x, L.y, L.w, L.h, 16);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(255,255,255,.14)";
+  ctx.lineWidth = 2;
+  roundRect(L.x+2, L.y+2, L.w-4, L.h-4, 14);
+  ctx.stroke();
+
+  // aim guide
+  const midX = L.x + L.w/2;
+  const midY = L.y + 22;
+  const aimLen = 95 + state.power*55;
+  const dx = state.aimX;
+
+  ctx.globalAlpha = 0.65;
+  ctx.strokeStyle = "rgba(255,216,77,.65)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(midX, midY);
+  ctx.lineTo(midX + dx*aimLen*0.55, midY - aimLen);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // power bar
+  const barW = L.w*0.78;
+  const barX = L.x + (L.w-barW)/2;
+  const barY = L.y + L.h - 18;
+  ctx.globalAlpha = 0.75;
+  ctx.fillStyle = "rgba(255,255,255,.12)";
+  roundRect(barX, barY, barW, 10, 999);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,216,77,.85)";
+  roundRect(barX, barY, barW*state.power, 10, 999);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawBall(now){
+  const b = state.ball;
+
+  // trail
+  for(let i=0;i<b.trail.length;i++){
+    const p = b.trail[i];
+    const age = (now - p.t);
+    const a = clamp(1 - age/380, 0, 1);
+    ctx.globalAlpha = a*0.35;
+    ctx.fillStyle = "rgba(51,214,255,.95)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, BALL_R*(0.6 + i/b.trail.length*0.4), 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // glow
+  ctx.globalAlpha = 0.30;
+  ctx.fillStyle = "rgba(51,214,255,.9)";
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, BALL_R+10, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // core ball
+  const g = ctx.createRadialGradient(b.x-4, b.y-4, 2, b.x, b.y, BALL_R);
+  g.addColorStop(0,"rgba(255,255,255,.92)");
+  g.addColorStop(1,"rgba(51,214,255,.45)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, BALL_R, 0, Math.PI*2);
+  ctx.fill();
+
+  // tiny “packet” ring
+  ctx.strokeStyle = "rgba(255,255,255,.22)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, BALL_R-2, 0, Math.PI*2);
+  ctx.stroke();
+}
+
+function drawFX(now){
+  // particles
   state.particles = state.particles.filter(pt => (now - pt.born) < pt.life);
   for(const pt of state.particles){
-    const age = now - pt.born;
-    const t = age / pt.life;
+    const t = (now - pt.born) / pt.life;
     pt.x += pt.vx;
     pt.y += pt.vy;
     pt.vy += 0.06;
 
-    const sx = pt.x - state.cameraX;
-    ctx.globalAlpha = 1 - t;
+    ctx.globalAlpha = (1-t);
     ctx.fillStyle = pt.color;
     ctx.beginPath();
-    ctx.arc(sx, pt.y, pt.r, 0, Math.PI*2);
+    ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI*2);
     ctx.fill();
-    ctx.globalAlpha = 1;
   }
+  ctx.globalAlpha = 1;
+
+  // float pops
+  state.floatPop = state.floatPop.filter(p => now < p.until);
+  for(const p of state.floatPop){
+    const t = 1 - ((p.until - now)/650);
+    ctx.globalAlpha = 1 - t;
+    ctx.fillStyle = p.color;
+    ctx.font = "950 18px system-ui,Segoe UI,Arial";
+    ctx.fillText(p.text, p.x - 14, p.y - t*22);
+  }
+  ctx.globalAlpha = 1;
 }
 
-function drawHint(now, W, H){
+function drawPhaseHint(now){
+  const W = board.W, H = board.H;
+  ctx.globalAlpha = 1;
+
   ctx.fillStyle = "rgba(255,255,255,.08)";
   ctx.fillRect(0, H-40, W, 40);
+
   ctx.fillStyle = "rgba(234,240,255,.92)";
   ctx.font = "900 12px system-ui,Segoe UI,Arial";
 
-  if(state.phase === "read"){
-    ctx.fillText("Reading time… (movement disabled)", 12, H-16);
-  }else if(state.phase === "navigate"){
-    ctx.fillText("Navigate to the yellow COMMIT ZONE to select A/B/C.", 12, H-16);
-  }else if(state.phase === "commit"){
-    ctx.fillText("You are in COMMIT ZONE. Choose A/B/C now (buttons or 1/2/3).", 12, H-16);
+  if(state.phase==="read"){
+    ctx.fillText("Reading time… (launch disabled)", 12, H-16);
+  }else if(state.phase==="aim"){
+    const lane = laneFromAim(state.aimX);
+    ctx.fillText(`Aim: ${lane}  |  Hold to charge, release to launch`, 12, H-16);
+  }else if(state.phase==="flight"){
+    ctx.fillText(`Ball in motion…`, 12, H-16);
   }else{
-    ctx.fillText("Runner is for engagement. Selection is explicit in Commit Zone.", 12, H-16);
+    ctx.fillText("Cyber Pinball Quiz", 12, H-16);
   }
 }
 
 function draw(now){
-  const m = getWorldMetrics();
-  const W = m.W, H = m.H;
+  // clear
+  const r = canvas.getBoundingClientRect();
+  ctx.clearRect(0,0,r.width,r.height);
 
-  ctx.clearRect(0,0,W,H);
-  drawSky(now, W, H);
-  drawGround(W, m.groundY, m.groundThickness);
+  // background stars
+  drawStars(now);
 
-  drawMarkers();
-  drawCommitZone(now);
-  drawParticles(now);
-  drawFloatPops(now);
-  drawPlayer(now);
-  drawHint(now, W, H);
+  // board
+  drawBoardFrame();
+  drawLanes(now);
+  drawBumpers();
+
+  // launcher + ball
+  drawLauncher();
+  if(state.phase==="aim" || state.phase==="flight" || state.phase==="feedback"){
+    drawBall(now);
+  }
+
+  // fx
+  drawFX(now);
+
+  drawPhaseHint(now);
 }
 
 /* =========================================================
-   Step (physics + phases)
-   ========================================================= */
-function step(now){
-  if(!state.running) return;
-
-  const m = getWorldMetrics();
-  const groundY = m.groundY;
-
-  // read bar progress
-  if(state.phase === "read"){
-    const total = state.readUntil - state.readStart;
-    const done = clamp(now - state.readStart, 0, total);
-    const pct = total > 0 ? (done/total)*100 : 100;
-    readBar.style.width = pct.toFixed(1) + "%";
-    readSecs.textContent = Math.max(0, (total - done)/1000).toFixed(1) + "s";
-
-    // end read phase
-    if(now >= state.readUntil){
-      readWrap.style.display = "none";
-      state.phase = "navigate";
-      state.decisionStart = performance.now();
-      state.questionTimeoutAt = state.decisionStart + QUESTION_TIMEOUT_MS;
-      setStatus("Navigate forward to the yellow COMMIT ZONE. Options shown are A/B/C.", true);
-    }
-  }
-
-  // question overall timeout (after read ends)
-  if((state.phase === "navigate" || state.phase === "commit") && !state.committed){
-    if(performance.now() >= state.questionTimeoutAt){
-      noAnswer("Time expired.");
-    }
-  }
-
-  const inReadPause = (state.phase === "read" || state.phase === "feedback" || state.phase === "end");
-  const forward = (!inReadPause && (state.phase === "navigate" || state.phase === "commit")) ? RUN_SPEED : 0;
-  state.worldX += forward;
-
-  // lateral control (disabled during read to avoid distraction)
-  const ctl = player.onGround ? GROUND_CONTROL : AIR_CONTROL;
-  if(!inReadPause){
-    if(input.left)  player.vx -= ctl;
-    if(input.right) player.vx += ctl;
-  }
-  player.vx *= 0.88;
-  player.vx = clamp(player.vx, -3.0, 3.0);
-
-  // jump (disabled during read/feedback)
-  if(input.jump){
-    input.jump = false;
-    if(!inReadPause && player.onGround){
-      player.vy = JUMP_VEL;
-      player.onGround = false;
-      addBurst(state.worldX + player.x + player.w/2, player.y + player.h, "rgba(255,255,255,.75)");
-    }
-  }
-
-  // gravity
-  player.vy += GRAVITY;
-  player.vy = Math.min(player.vy, 18);
-
-  // integrate
-  player.x += player.vx;
-  player.y += player.vy;
-
-  // keep player visible (screen-space)
-  player.x = clamp(player.x, 24, m.W - player.w - 24);
-
-  // ground collision
-  const floor = groundY - player.h;
-  if(player.y >= floor){
-    player.y = floor;
-    player.vy = 0;
-    player.onGround = true;
-  }
-
-  // camera
-  state.cameraX = state.worldX;
-
-  // commit zone checks
-  updateCommitZone(now);
-}
-
-/* =========================================================
-   Question flow
+   Flow control
    ========================================================= */
 function startQuestion(){
   if(state.qIndex >= state.questions.length){
@@ -1255,22 +1269,13 @@ function startQuestion(){
     return;
   }
 
-  // reset per-question
-  state.markers = [];
-  state.commitZone = null;
-  state.inCommitZone = false;
-  state.commitUnlockAt = 0;
-  state.committed = false;
-  commitWrap.style.display = "none";
+  popupEl.style.display="none";
   setStatus("", false);
 
   const q = state.questions[state.qIndex++];
   renderQuestion(q);
 
-  // build world elements for this question
-  buildSequenceForQuestion();
-
-  // enter read phase
+  // read phase
   state.phase = "read";
   state.readStart = performance.now();
   state.readUntil = state.readStart + READ_PAUSE_MS;
@@ -1278,125 +1283,136 @@ function startQuestion(){
   readWrap.style.display = "block";
   readBar.style.width = "0%";
   readSecs.textContent = (READ_PAUSE_MS/1000).toFixed(1) + "s";
+
+  // reset ball to launcher
+  resetBall();
+
+  // transition to aim at end of read
+  setTimeout(()=>{
+    if(!state.running) return;
+    if(state.phase !== "read") return;
+
+    readWrap.style.display = "none";
+    state.phase = "aim";
+    state.aimStart = performance.now();
+    state.aimUntil = state.aimStart + AIM_TIME_LIMIT_MS;
+    state.decisionStart = performance.now(); // RT measured from start of aim
+    setStatus("Aim and launch into lane A/B/C.", true);
+  }, READ_PAUSE_MS);
 }
 
 function nextQuestion(){
-  popupEl.style.display="none";
+  resetBall();
   setStatus("", false);
-
-  // small separation
   setTimeout(()=> startQuestion(), 650);
-}
-
-/* =========================================================
-   End + CSV
-   ========================================================= */
-function downloadCSV(){
-  const rows = [["ts","qid","topic","option_order","selected","correct","is_correct","response_ms","score_after"]];
-  for(const r of state.log){
-    rows.push([r.ts,r.qid,r.topic,r.option_order,r.selected,r.correct,r.is_correct,r.response_ms,r.score_after]);
-  }
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href=url; a.download="GBL_CommitZone_Log.csv";
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
 }
 
 function endGame(){
   state.running = false;
   state.phase = "end";
-  commitWrap.style.display = "none";
   readWrap.style.display = "none";
   setStatus("", false);
 
   const acc = state.attempted ? Math.round((state.correct/state.attempted)*100) : 0;
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody  = document.getElementById("modalBody");
   modalTitle.textContent = "Run Completed";
   modalBody.innerHTML = `
+    <p><b>Participant:</b> ${escapeHtml(PID)}</p>
     <p><b>Score:</b> ${state.score} &nbsp; | &nbsp; <b>Accuracy:</b> ${acc}% &nbsp; | &nbsp; <b>Attempted:</b> ${state.attempted}</p>
     <p class="muted">Download CSV for analysis.</p>
     <div class="row" style="justify-content:flex-start; margin-top:10px; gap:10px;">
       <button class="btn" id="dlBtn">Download CSV</button>
     </div>
   `;
-  overlay.style.display = "flex";
+  overlay.style.display="flex";
   setTimeout(()=> document.getElementById("dlBtn").onclick = downloadCSV, 0);
 }
 
-/* =========================================================
-   Boot / Start
-   ========================================================= */
-function boot(){
-  state.running = false;
-  state.phase = "menu";
-
-  state.score = 0;
-  state.correct = 0;
-  state.attempted = 0;
-
-  state.questions = prepareQuestionsBalanced();
-  state.qIndex = 0;
-
-  state.cameraX = 0;
-  state.worldX = 0;
-
-  state.markers = [];
-  state.commitZone = null;
-
-  state.floatPop = [];
-  state.particles = [];
-  state.log = [];
-
-  popupEl.style.display = "none";
-  readWrap.style.display = "none";
-  commitWrap.style.display = "none";
-  setStatus("", false);
-
-  topicBadge.textContent = "Ready";
-  qTextEl.textContent = "Press Start to begin.";
-  choicesEl.innerHTML = "";
-
-  qtotalEl.textContent = String(state.questions.length);
-  updateHUD();
-  resetPlayer();
-}
-
-function startGame(){
-  overlay.style.display = "none";
-  state.running = true;
-
-  topicBadge.textContent = "Starting";
-  setStatus("Starting…", true);
-
-  // short warm-up then first question
-  setTimeout(()=>{
-    setStatus("", false);
-    startQuestion();
-  }, 650);
+function downloadCSV(){
+  const rows = [["ts","pid","qid","topic","option_order","selected","intended","correct","is_correct","response_ms","score_after"]];
+  for(const r of state.log){
+    rows.push([r.ts,r.pid,r.qid,r.topic,r.option_order,r.selected,r.intended,r.correct,r.is_correct,r.response_ms,r.score_after]);
+  }
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href=url; a.download="Cyber_Pinball_Quiz_Log.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
 }
 
 /* =========================================================
-   Buttons
-   ========================================================= */
-document.getElementById("restartBtn").onclick = ()=> { overlay.style.display="none"; boot(); };
-document.getElementById("startBtn").onclick = ()=> { if(!state.running) startGame(); };
-
-/* =========================================================
-   Loop
+   Main loop
    ========================================================= */
 function loop(now){
-  step(now);
+  if(state.running){
+    if(state.phase==="read"){
+      const total = state.readUntil - state.readStart;
+      const done = clamp(now - state.readStart, 0, total);
+      const pct = total > 0 ? (done/total)*100 : 100;
+      readBar.style.width = pct.toFixed(1) + "%";
+      readSecs.textContent = Math.max(0, (total - done)/1000).toFixed(1) + "s";
+    }
+
+    if(state.phase==="aim"){
+      stepAim(now);
+    }else if(state.phase==="flight"){
+      // run a few sub-steps for stability
+      for(let i=0;i<1;i++) stepFlight();
+    }
+  }
+
   draw(now);
   requestAnimationFrame(loop);
 }
 
 /* =========================================================
+   Boot / controls
+   ========================================================= */
+function boot(){
+  state.running = false;
+  state.phase = "menu";
+  state.score = 0;
+  state.correct = 0;
+  state.attempted = 0;
+  state.qIndex = 0;
+  state.log = [];
+  state.particles = [];
+  state.floatPop = [];
+
+  state.questions = prepareQuestionsBalanced();
+  qtotalEl.textContent = String(state.questions.length);
+
+  topicBadge.textContent = "Ready";
+  qTextEl.textContent = "Press Start to begin.";
+  choicesEl.innerHTML = "";
+  popupEl.style.display="none";
+  readWrap.style.display="none";
+  setStatus("", false);
+
+  resetBall();
+  updateHUD();
+}
+
+function startGame(){
+  overlay.style.display="none";
+  state.running = true;
+  state.phase = "read";
+  setStatus("Starting…", true);
+  setTimeout(()=> startQuestion(), 450);
+}
+
+document.getElementById("restartBtn").onclick = ()=>{ overlay.style.display="none"; boot(); };
+document.getElementById("startBtn").onclick = ()=>{ if(!state.running) startGame(); };
+
+/* =========================================================
    Init
    ========================================================= */
 fitCanvas();
-initSky();
+initStars();
+buildBoard();
 boot();
 requestAnimationFrame(loop);
 </script>
