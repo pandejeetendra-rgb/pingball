@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>GBL Runner v5 — Low Speed • Spaced Blocks • Better Player</title>
+  <title>GBL Runner v5.1 — Option 2 Read-Pause + Smaller Blocks</title>
   <style>
     :root{
       --bg:#071025;
@@ -110,6 +110,33 @@
     .tag.C{background:var(--c)}
     .muted{color:var(--muted)}
 
+    /* Read pause bar */
+    .readBarWrap{
+      margin-top:10px;
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.10);
+      display:none;
+    }
+    .readLabel{
+      display:flex; justify-content:space-between; align-items:center;
+      font-size:12px; color:var(--muted); font-weight:750;
+      margin-bottom:8px;
+    }
+    .bar{
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, rgba(51,214,255,.85), rgba(124,92,255,.85));
+    }
+
     .gameCard{flex:1.8; display:flex; flex-direction:column; gap:10px; padding:10px;}
     canvas{
       width:100%;
@@ -200,8 +227,8 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <div class="t">GBL Runner v5 — Simple Logic (Low Speed + Spaced Options)</div>
-      <div class="s">Answer by colliding with the correct block • Jump over incorrect ones • Always visible on any screen</div>
+      <div class="t">GBL Runner v5.1 — Option 2 (Read Pause + Progress Bar)</div>
+      <div class="s">Auto-freeze to read • Then A/B/C blocks spawn (smaller) with safe spacing • Low speed</div>
     </div>
     <div class="hud">
       <div class="pill">Score: <b id="score">0</b></div>
@@ -218,10 +245,19 @@
       <section class="card qCard" aria-live="polite">
         <div class="qTitle">
           <div class="badge" id="topicBadge">Ready</div>
-          <div class="tiny muted">During question: collide with correct A/B/C block, jump over wrong ones.</div>
+          <div class="tiny muted">Read first, then options appear. Collide with correct; jump over wrong.</div>
         </div>
         <div class="qText" id="qText">Press Start to begin.</div>
         <div class="choices" id="choices"></div>
+
+        <div class="readBarWrap" id="readWrap">
+          <div class="readLabel">
+            <span>Reading time…</span>
+            <span id="readSecs">0.0s</span>
+          </div>
+          <div class="bar"><div id="readBar"></div></div>
+        </div>
+
         <div class="pop" id="popup"></div>
       </section>
 
@@ -235,7 +271,7 @@
         </div>
 
         <div class="footerRow">
-          <div class="tiny">Low speed • Big readable questions • Options are spaced with safe landing gaps</div>
+          <div class="tiny">Tip: wait during read pause, then move/jump to reach the correct option block.</div>
           <button class="btn" id="startBtn">Start</button>
         </div>
       </section>
@@ -248,12 +284,11 @@
     <h2 id="modalTitle">How to Play</h2>
     <div id="modalBody">
       <ul>
-        <li>The runner moves forward slowly.</li>
-        <li>Each question shows three option blocks A/B/C (spaced apart).</li>
-        <li><b>Goal:</b> collide with the correct option block. Jump over incorrect ones.</li>
-        <li>Jump: <b>Space</b> or <b>↑</b> (mobile: Jump button). You can also slightly adjust left/right.</li>
-        <li>Correct = <b>+10</b>. Wrong = <b>0</b> (and it moves to next question).</li>
-        <li>At end, you can download a CSV log for analysis.</li>
+        <li>When a question appears, the game <b>auto-freezes</b> for a few seconds so you can read.</li>
+        <li>After the timer ends, option blocks A/B/C spawn ahead (spaced).</li>
+        <li><b>Goal:</b> collide with the correct block. Jump over incorrect ones.</li>
+        <li>Jump: <b>Space</b> or <b>↑</b>. Mobile: Jump button. You can adjust left/right slightly.</li>
+        <li>Correct = <b>+10</b>. Wrong = <b>0</b>. One attempt per question.</li>
       </ul>
     </div>
     <div class="row">
@@ -264,9 +299,7 @@
 
 <script>
 /* =========================================================
-   QUESTIONS
-   Replace these with your chapter-based questions.
-   Keep options short for phone readability.
+   QUESTIONS (replace with your chapter-based)
    ========================================================= */
 const QUESTION_BANK = [
   {id:"Q1",topic:"Mobile Security",q:"Safest place to install apps is:",
@@ -320,9 +353,14 @@ const qTextEl = document.getElementById("qText");
 const choicesEl = document.getElementById("choices");
 const topicBadge = document.getElementById("topicBadge");
 const popupEl = document.getElementById("popup");
+
 const overlay = document.getElementById("overlay");
 const modalTitle = document.getElementById("modalTitle");
 const modalBody  = document.getElementById("modalBody");
+
+const readWrap = document.getElementById("readWrap");
+const readBar  = document.getElementById("readBar");
+const readSecs = document.getElementById("readSecs");
 
 document.getElementById("howBtn").onclick = ()=> overlay.style.display="flex";
 document.getElementById("closeModal").onclick = ()=> overlay.style.display="none";
@@ -340,26 +378,38 @@ function fitCanvas(){
   canvas.height = Math.floor(rect.height * dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-window.addEventListener("resize", ()=>{ fitCanvas(); initSky(); });
+window.addEventListener("resize", ()=>{ fitCanvas(); initSky(); resetPlayer(); });
 
 /* =========================================================
-   Game tuning (LOW SPEED + SAFE SPACING)
+   Game tuning (LOW SPEED + READ PAUSE OPTION 2)
    ========================================================= */
-const READ_PAUSE_MS = 1200;   // freeze runner to read
-const RUN_SPEED = 2.0;        // low speed (world px per frame-ish)
+const READ_PAUSE_MS = 4500;   // increase reading time
+const RUN_SPEED = 1.7;        // low speed
 const GRAVITY = 0.85;
 const JUMP_VEL = -14.0;
-const AIR_CONTROL = 0.20;     // small left/right adjust
+const AIR_CONTROL = 0.20;
 const GROUND_CONTROL = 0.45;
 
-const QUESTION_TIMEOUT_MS = 13000;
+const QUESTION_TIMEOUT_MS = 15000;
 const FEEDBACK_MS = 950;
 
-const BLOCK_HIT_MARGIN = 6;   // forgiveness
 const QUESTIONS_PER_RUN = 6;
 
+/* Smaller blocks + safe gaps */
+const BLOCK_W = 64;   // smaller
+const BLOCK_H = 40;   // smaller
+const GAP_PX  = 145;  // safe landing gap
+
+/* Collision behavior:
+   - We only count a choice if player hits the block's FRONT FACE (left strip).
+   - Landing on TOP of a block does NOT count as choosing it.
+*/
+const FACE_STRIP_W = 14;
+const FACE_PRE_PAD = 6;
+const TOP_IGNORE_PAD = 8;
+
 /* =========================================================
-   Responsive world (NO hard-coded 430)
+   Responsive world
    ========================================================= */
 function getWorldMetrics(){
   const rect = canvas.getBoundingClientRect();
@@ -369,7 +419,7 @@ function getWorldMetrics(){
   const groundThickness = clamp(Math.round(H*0.12), 46, 72);
   const groundY = H - groundThickness;
 
-  const playerH = clamp(Math.round(H*0.12), 54, 82);
+  const playerH = clamp(Math.round(H*0.12), 56, 86);
   const playerW = Math.round(playerH*0.72);
 
   return {W,H,groundY,groundThickness,playerW,playerH};
@@ -403,17 +453,18 @@ const state = {
   current:null,
 
   cameraX:0,
-  worldX:0, // player world position x (continuous forward)
+  worldX:0,
 
+  readStart:0,
   readUntil:0,
-  questionStart:0,
+  blocksSpawned:false,
 
-  blocks:[], // active option blocks for current question
+  questionStart:0,
   answered:false,
 
+  blocks:[],
   floatPop:[],
   particles:[],
-
   log:[]
 };
 
@@ -501,33 +552,24 @@ function showPopup(ok, correctKey, why){
 }
 
 /* =========================================================
-   Blocks (A/B/C) — spaced along X (NOT continuous)
+   Blocks: smaller and spaced
    ========================================================= */
 function spawnOptionBlocks(){
   const m = getWorldMetrics();
-  const blockH = clamp(Math.round(m.H*0.10), 40, 58);
-  const blockW = clamp(Math.round(m.W*0.10), 68, 92);
-
-  // "Appropriate spacing": big enough to land + decide
-  const gap = clamp(Math.round(m.W*0.16), 110, 160);
-
-  // spawn ahead so learner sees them coming (after read pause)
-  const spawnWorldX = state.worldX + Math.round(m.W*0.75);
-
-  const y = m.groundY - blockH;
+  const spawnWorldX = state.worldX + Math.round(m.W*0.78);
+  const y = m.groundY - BLOCK_H;
 
   state.blocks = [
-    makeBlock("A", spawnWorldX + 0*(blockW+gap), y, blockW, blockH),
-    makeBlock("B", spawnWorldX + 1*(blockW+gap), y, blockW, blockH),
-    makeBlock("C", spawnWorldX + 2*(blockW+gap), y, blockW, blockH),
+    makeBlock("A", spawnWorldX + 0*(BLOCK_W+GAP_PX), y, BLOCK_W, BLOCK_H),
+    makeBlock("B", spawnWorldX + 1*(BLOCK_W+GAP_PX), y, BLOCK_W, BLOCK_H),
+    makeBlock("C", spawnWorldX + 2*(BLOCK_W+GAP_PX), y, BLOCK_W, BLOCK_H),
   ];
-
-  state.answered = false;
+  state.blocksSpawned = true;
 }
 
 function makeBlock(key, x, y, w, h){
   const color = key==="A" ? css("--a") : key==="B" ? css("--b") : css("--c");
-  return {key, x, y, w, h, color, hit:false, bounce:0};
+  return {key, x, y, w, h, color, hit:false, bounceUntil:0};
 }
 
 /* =========================================================
@@ -553,48 +595,42 @@ function addBurst(worldX, y, color){
 }
 
 /* =========================================================
-   Collision (player vs block)
-   We count collision when player hits front/side with forgiveness.
+   Collision: FRONT FACE ONLY
+   - If player lands on top of a block, ignore (not a choice).
    ========================================================= */
-function rectsOverlap(a,b){
+function overlap(a,b){
   return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
 }
 
 function checkBlockCollisions(now){
   if(state.phase !== "question") return;
   if(state.answered) return;
+  if(!state.blocks.length) return;
 
-  const m = getWorldMetrics();
-  const pxWorldLeft = state.worldX + player.x - state.worldX; // keep simple: player.x is screen-space; worldX is tracked separately
-  // Actually, our world system is: player stays around screen x, worldX increases.
-  // The player's world x is state.worldX + player.x.
+  // movement allowed only after read pause ends (prevents early collision)
+  const canChoose = (now >= state.readUntil);
+
   const playerWorldX = state.worldX + player.x;
-
-  const pr = {
-    x: playerWorldX,
-    y: player.y,
-    w: player.w,
-    h: player.h
-  };
+  const pr = {x: playerWorldX, y: player.y, w: player.w, h: player.h};
+  const feetY = pr.y + pr.h;
 
   for(const b of state.blocks){
     if(b.hit) continue;
 
-    const br = {x:b.x, y:b.y, w:b.w, h:b.h};
+    // If the player's feet are above the top of the block -> landing on top (ignore)
+    if(feetY <= b.y + TOP_IGNORE_PAD) continue;
 
-    // forgiveness: shrink collision slightly so tiny corner touches don't punish
-    const shrunk = {
-      x: br.x + BLOCK_HIT_MARGIN,
-      y: br.y + 2,
-      w: br.w - 2*BLOCK_HIT_MARGIN,
-      h: br.h - 4
+    // Front face strip (left side of block)
+    const face = {
+      x: b.x - FACE_PRE_PAD,
+      y: b.y + 6,
+      w: FACE_STRIP_W,
+      h: b.h - 12
     };
 
-    if(rectsOverlap(pr, shrunk)){
+    if(canChoose && overlap(pr, face)){
       b.hit = true;
-      b.bounce = now + 180;
-
-      // handle answer
+      b.bounceUntil = now + 180;
       handleAnswer(b.key);
       break;
     }
@@ -602,7 +638,7 @@ function checkBlockCollisions(now){
 }
 
 /* =========================================================
-   Answer / flow
+   Answer flow
    ========================================================= */
 function handleAnswer(selectedKey){
   const q = state.current;
@@ -675,19 +711,30 @@ function startQuestion(){
 
   state.phase = "question";
   topicBadge.textContent = "Question";
-  state.readUntil = performance.now() + READ_PAUSE_MS;
-  state.questionStart = performance.now();
   state.blocks = [];
+  state.blocksSpawned = false;
   state.answered = false;
 
-  // after read pause, spawn blocks
+  // Read pause (Option 2): freeze motion, show progress bar
+  const now = performance.now();
+  state.readStart = now;
+  state.readUntil = now + READ_PAUSE_MS;
+  state.questionStart = now;
+
+  readWrap.style.display = "block";
+  readBar.style.width = "0%";
+  readSecs.textContent = (READ_PAUSE_MS/1000).toFixed(1) + "s";
+
+  // Spawn blocks after read pause ends
   setTimeout(()=>{
     if(state.phase === "question" && !state.answered){
       spawnOptionBlocks();
+      // hide read bar when options appear
+      readWrap.style.display = "none";
     }
   }, READ_PAUSE_MS);
 
-  // timeout
+  // Timeout
   setTimeout(()=> autoNoAnswer(), QUESTION_TIMEOUT_MS);
 }
 
@@ -696,8 +743,8 @@ function nextQuestion(){
   state.blocks = [];
   state.phase = "run";
   topicBadge.textContent = "Running";
+  readWrap.style.display = "none";
 
-  // tiny gap before next question
   setTimeout(()=> startQuestion(), 650);
 }
 
@@ -715,7 +762,6 @@ function roundRect(x,y,w,h,r){
 }
 
 function drawSky(now, W, H){
-  // stars
   for(const s of stars){
     const tw = 0.45 + 0.55*Math.sin(now/700 + s.tw);
     ctx.globalAlpha = 0.25 + tw*0.65;
@@ -726,7 +772,6 @@ function drawSky(now, W, H){
   }
   ctx.globalAlpha = 1;
 
-  // soft hills
   ctx.globalAlpha = 0.18;
   ctx.fillStyle = "rgba(100,181,255,.9)";
   ctx.beginPath();
@@ -737,7 +782,6 @@ function drawSky(now, W, H){
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  // subtle horizon glow
   const g = ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,"rgba(255,255,255,.06)");
   g.addColorStop(0.55,"rgba(255,255,255,.00)");
@@ -745,8 +789,7 @@ function drawSky(now, W, H){
   ctx.fillRect(0,0,W,H);
 }
 
-function drawGround(W, H, groundY, thick){
-  // ground
+function drawGround(W, groundY, thick){
   const base = ctx.createLinearGradient(0, groundY, 0, groundY+thick);
   base.addColorStop(0, "rgba(46,101,196,.92)");
   base.addColorStop(1, "rgba(20,35,74,.92)");
@@ -754,7 +797,6 @@ function drawGround(W, H, groundY, thick){
   roundRect(0, groundY, W, thick, 16);
   ctx.fill();
 
-  // tile-ish pattern
   ctx.globalAlpha = 0.12;
   ctx.fillStyle = "white";
   for(let x=16; x<W; x+=34){
@@ -764,13 +806,10 @@ function drawGround(W, H, groundY, thick){
 }
 
 function drawPlayer(now){
-  // improved silhouette: head/helmet + body + legs + outline
+  // clearer helmet+torso silhouette
   player.t += 0.12 + Math.min(0.20, Math.abs(player.vx)*0.08);
 
-  const x = player.x;
-  const y = player.y;
-  const w = player.w;
-  const h = player.h;
+  const x = player.x, y = player.y, w = player.w, h = player.h;
 
   // shadow
   ctx.fillStyle="rgba(0,0,0,.30)";
@@ -778,7 +817,7 @@ function drawPlayer(now){
   ctx.ellipse(x+w*0.5, y+h+10, w*0.42, 6, 0, 0, Math.PI*2);
   ctx.fill();
 
-  // helmet (bigger, clearer)
+  // helmet
   const headR = Math.max(14, w*0.45);
   const hx = x + w*0.5;
   const hy = y + h*0.28;
@@ -799,7 +838,7 @@ function drawPlayer(now){
   roundRect(hx-headR*0.62, hy-headR*0.18, headR*1.24, headR*0.56, 10);
   ctx.fill();
 
-  // body (clear torso)
+  // torso
   const bodyTop = y + h*0.42;
   const bodyH = h*0.52;
   const bodyGrad = ctx.createLinearGradient(x, bodyTop, x, bodyTop+bodyH);
@@ -816,7 +855,7 @@ function drawPlayer(now){
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  // arms (chunkier for visibility)
+  // arms & legs
   const armSwing = Math.sin(player.t)*6;
   ctx.strokeStyle="rgba(255,255,255,.85)";
   ctx.lineWidth = Math.max(5, w*0.14);
@@ -830,7 +869,6 @@ function drawPlayer(now){
   ctx.lineTo(x+w*0.90, bodyTop+bodyH*0.40 - armSwing*0.10);
   ctx.stroke();
 
-  // legs (more visible)
   const step = Math.sin(player.t)*7;
   ctx.strokeStyle="rgba(255,255,255,.90)";
   ctx.lineWidth = Math.max(6, w*0.16);
@@ -843,7 +881,7 @@ function drawPlayer(now){
   ctx.lineTo(x+w*0.64 - step*0.45, y+h+10);
   ctx.stroke();
 
-  // outline (high contrast)
+  // outline
   ctx.strokeStyle="rgba(100,181,255,.55)";
   ctx.lineWidth=2;
   ctx.beginPath();
@@ -854,21 +892,19 @@ function drawPlayer(now){
 }
 
 function drawBlocks(now){
-  const cam = state.cameraX;
-
   for(const b of state.blocks){
-    const bounce = (b.bounce && b.bounce > now) ? Math.sin((1 - (b.bounce - now)/180)*Math.PI)*10 : 0;
-    const sx = b.x - cam;
+    const bounce = (b.bounceUntil > now) ? Math.sin((1 - (b.bounceUntil - now)/180)*Math.PI)*8 : 0;
+    const sx = b.x - state.cameraX;
     const sy = b.y - bounce;
 
     // glow
-    ctx.globalAlpha = 0.18;
+    ctx.globalAlpha = 0.16;
     ctx.fillStyle = b.color;
     roundRect(sx-6, sy-6, b.w+12, b.h+12, 14);
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    // block body
+    // body
     const grad = ctx.createLinearGradient(sx,sy,sx,sy+b.h);
     grad.addColorStop(0, b.color);
     grad.addColorStop(1, "rgba(0,0,0,.10)");
@@ -886,8 +922,8 @@ function drawBlocks(now){
 
     // label
     ctx.fillStyle = "rgba(7,16,37,.92)";
-    ctx.font = "950 22px system-ui,Segoe UI,Arial";
-    ctx.fillText(b.key, sx + b.w/2 - 7, sy + b.h/2 + 8);
+    ctx.font = "950 20px system-ui,Segoe UI,Arial";
+    ctx.fillText(b.key, sx + b.w/2 - 7, sy + b.h/2 + 7);
   }
 }
 
@@ -929,7 +965,11 @@ function drawHint(now, W, H){
     ctx.fillRect(0, H-40, W, 40);
     ctx.fillStyle = "rgba(234,240,255,.92)";
     ctx.font = "900 12px system-ui,Segoe UI,Arial";
-    ctx.fillText("Answer: collide with correct block A/B/C. Jump over wrong ones.", 12, H-16);
+    if(now < state.readUntil){
+      ctx.fillText("Reading time… options will appear soon.", 12, H-16);
+    }else{
+      ctx.fillText("Now answer: collide with correct block A/B/C. Jump over wrong ones.", 12, H-16);
+    }
   }
 }
 
@@ -938,25 +978,19 @@ function draw(now){
   const W = m.W, H = m.H;
 
   ctx.clearRect(0,0,W,H);
-
   drawSky(now, W, H);
+  drawGround(W, m.groundY, m.groundThickness);
 
-  // ground
-  drawGround(W, H, m.groundY, m.groundThickness);
-
-  // blocks + effects are in world-space (camera translate done by subtracting cameraX)
   drawBlocks(now);
   drawParticles(now);
   drawFloatPops(now);
-
-  // player is in screen-space (always visible)
   drawPlayer(now);
 
   drawHint(now, W, H);
 }
 
 /* =========================================================
-   Physics + camera (player ALWAYS visible)
+   Step
    ========================================================= */
 function step(now){
   if(!state.running) return;
@@ -964,24 +998,35 @@ function step(now){
   const m = getWorldMetrics();
   const groundY = m.groundY;
 
-  // reading pause: freeze forward motion so learners can read
+  // reading freeze
   const inReadPause = (state.phase === "question" && now < state.readUntil);
 
-  // forward progression: worldX moves, player mostly stays in place on screen
+  // progress bar update
+  if(state.phase === "question" && readWrap.style.display === "block"){
+    const total = state.readUntil - state.readStart;
+    const done = clamp(now - state.readStart, 0, total);
+    const pct = total > 0 ? (done/total)*100 : 100;
+    readBar.style.width = pct.toFixed(1) + "%";
+    readSecs.textContent = Math.max(0, (total - done)/1000).toFixed(1) + "s";
+  }
+
+  // forward motion
   const forward = (!inReadPause && (state.phase === "run" || state.phase === "question")) ? RUN_SPEED : 0;
   state.worldX += forward;
 
-  // small left/right adjust (screen-space)
+  // lateral adjustment
   const ctl = player.onGround ? GROUND_CONTROL : AIR_CONTROL;
-  if(input.left)  player.vx -= ctl;
-  if(input.right) player.vx += ctl;
+  if(!inReadPause){ // avoid distraction: no movement during read pause
+    if(input.left)  player.vx -= ctl;
+    if(input.right) player.vx += ctl;
+  }
   player.vx *= 0.88;
-  player.vx = clamp(player.vx, -3.2, 3.2);
+  player.vx = clamp(player.vx, -3.0, 3.0);
 
-  // jump
+  // jump (disabled during read pause)
   if(input.jump){
     input.jump = false;
-    if(player.onGround){
+    if(!inReadPause && player.onGround){
       player.vy = JUMP_VEL;
       player.onGround = false;
       addBurst(state.worldX + player.x + player.w/2, player.y + player.h, "rgba(255,255,255,.75)");
@@ -996,7 +1041,7 @@ function step(now){
   player.x += player.vx;
   player.y += player.vy;
 
-  // keep player within visible screen
+  // keep player visible
   player.x = clamp(player.x, 24, m.W - player.w - 24);
 
   // ground collision
@@ -1007,36 +1052,33 @@ function step(now){
     player.onGround = true;
   }
 
-  // camera follows world, keeping player area stable
-  // The cameraX is simply worldX (so blocks scroll towards player)
+  // camera maps world to screen
   state.cameraX = state.worldX;
-
-  // if blocks exist and player passes beyond last block without hitting -> NA
-  if(state.phase === "question" && state.blocks.length){
-    const last = state.blocks[state.blocks.length-1];
-    const playerWorldX = state.worldX + player.x;
-    if(!state.answered && playerWorldX > last.x + last.w + 60){
-      autoNoAnswer();
-    }
-  }
 
   // collision with blocks
   checkBlockCollisions(now);
+
+  // if blocks exist and player passes last without choosing -> NA
+  if(state.phase === "question" && state.blocks.length && !state.answered){
+    const last = state.blocks[state.blocks.length-1];
+    const playerWorldX = state.worldX + player.x;
+    if(playerWorldX > last.x + last.w + 80){
+      autoNoAnswer();
+    }
+  }
 }
 
 /* =========================================================
-   Game start / end
+   Start/end/reset
    ========================================================= */
 function prepareQuestions(){
   state.questions = shuffle(QUESTION_BANK).slice(0, Math.min(QUESTIONS_PER_RUN, QUESTION_BANK.length));
   state.qIndex = 0;
   qtotalEl.textContent = String(state.questions.length);
 }
-
 function boot(){
   state.running = false;
   state.phase = "menu";
-
   state.score = 0;
   state.coins = 0;
   state.correct = 0;
@@ -1048,14 +1090,21 @@ function boot(){
   state.cameraX = 0;
   state.worldX = 0;
 
-  state.blocks = [];
+  state.readStart = 0;
+  state.readUntil = 0;
+  state.blocksSpawned = false;
+
+  state.questionStart = 0;
   state.answered = false;
 
+  state.blocks = [];
   state.floatPop = [];
   state.particles = [];
   state.log = [];
 
   popupEl.style.display = "none";
+  readWrap.style.display = "none";
+
   topicBadge.textContent = "Ready";
   qTextEl.textContent = "Press Start to begin.";
   choicesEl.innerHTML = "";
@@ -1064,7 +1113,6 @@ function boot(){
   updateHUD();
   resetPlayer();
 }
-
 function startGame(){
   overlay.style.display = "none";
   state.running = true;
@@ -1072,15 +1120,11 @@ function startGame(){
   topicBadge.textContent = "Running";
   qTextEl.textContent = "Get ready. First question starts now.";
   choicesEl.innerHTML = "";
-
-  // start first question after short warm-up
   setTimeout(()=> startQuestion(), 650);
 }
-
 function endGame(){
   state.running = false;
   state.phase = "end";
-
   const acc = state.attempted ? Math.round((state.correct/state.attempted)*100) : 0;
   modalTitle.textContent = "Run Completed";
   modalBody.innerHTML = `
@@ -1093,7 +1137,6 @@ function endGame(){
   overlay.style.display = "flex";
   setTimeout(()=> document.getElementById("dlBtn").onclick = downloadCSV, 0);
 }
-
 function downloadCSV(){
   const rows = [["ts","qid","topic","selected","correct","is_correct","response_ms","score_after"]];
   for(const r of state.log){
@@ -1103,7 +1146,7 @@ function downloadCSV(){
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href=url; a.download="GBL_Runner_v5_Log.csv";
+  a.href=url; a.download="GBL_Runner_v5_1_Log.csv";
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
 }
