@@ -1,41 +1,39 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Cyber Pinball Quiz — GBL (Controlled, Fair, Mobile-Ready)</title>
+  <title>Secure Inbox Quiz — GBL (Stable, Attractive, Mobile-First)</title>
   <style>
     :root{
-      --bg:#070f22;
+      --bg0:#050a16;
+      --bg1:#071025;
       --ink:#eaf0ff;
       --muted:#b9c6ff;
 
       --panel:rgba(255,255,255,.08);
       --border:rgba(255,255,255,.14);
-      --shadow:0 12px 34px rgba(0,0,0,.35);
+      --shadow:0 12px 34px rgba(0,0,0,.38);
 
       --good:#39d98a;
       --bad:#ff5c7a;
+      --warn:#ffd84d;
 
       --a:#7c5cff;
       --b:#33d6ff;
       --c:#ff7ad9;
-
-      --laneGlow: rgba(255,255,255,.18);
-      --zone: rgba(255,216,77,.60);
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
+      margin:0; color:var(--ink);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--ink);
       background:
-        radial-gradient(1100px 520px at 70% 5%, rgba(51,214,255,.16), transparent 60%),
-        radial-gradient(900px 500px at 20% 15%, rgba(124,92,255,.12), transparent 60%),
-        linear-gradient(180deg, #050a16, var(--bg));
+        radial-gradient(1100px 520px at 75% 8%, rgba(51,214,255,.16), transparent 60%),
+        radial-gradient(900px 520px at 18% 18%, rgba(124,92,255,.14), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow:hidden;
     }
+
     .wrap{height:100dvh; display:flex; flex-direction:column;}
     header{
       padding:12px 14px 10px;
@@ -71,8 +69,14 @@
     }
     .btn:active{transform:translateY(1px)}
 
-    main{flex:1; padding:0 12px 12px; display:flex; flex-direction:column; gap:10px;}
-    .row{display:flex; gap:10px; align-items:stretch;}
+    main{
+      flex:1;
+      padding:0 12px 12px;
+      display:flex;
+      gap:10px;
+      align-items:stretch;
+    }
+
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.04));
       border:1px solid var(--border);
@@ -80,9 +84,14 @@
       box-shadow:var(--shadow);
       padding:12px;
       backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
     }
-    .qCard{flex:1.15; min-height:170px; position:relative; overflow:hidden;}
-    .qTitle{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
+
+    .left{flex:1.2; min-width:320px;}
+    .right{flex:1.8; min-width:360px; display:flex; flex-direction:column; gap:10px;}
+
+    .qTitle{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
     .badge{
       font-size:12px;
       padding:6px 10px;
@@ -92,11 +101,11 @@
       white-space:nowrap;
       user-select:none;
     }
-    .qText{font-size:16px; line-height:1.28; font-weight:950; margin-top:6px;}
-    .choices{margin-top:10px; display:grid; gap:6px;}
+    .qText{font-size:16px; line-height:1.28; font-weight:950; margin-top:4px;}
+    .choices{margin-top:10px; display:grid; gap:8px;}
     .choice{
-      display:flex; gap:10px; align-items:center;
-      padding:9px 10px;
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px 10px;
       border-radius:14px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(0,0,0,.10);
@@ -108,13 +117,14 @@
       display:grid; place-items:center;
       font-weight:950; color:#0b1220;
       flex:0 0 auto;
+      margin-top:1px;
     }
     .tag.A{background:var(--a)}
     .tag.B{background:var(--b)}
     .tag.C{background:var(--c)}
     .muted{color:var(--muted)}
 
-    .readBarWrap{
+    .readWrap{
       margin-top:10px;
       padding:10px;
       border-radius:14px;
@@ -139,6 +149,7 @@
       width:0%;
       background:linear-gradient(90deg, rgba(51,214,255,.85), rgba(124,92,255,.85));
     }
+
     .statusLine{
       margin-top:10px;
       padding:10px;
@@ -150,23 +161,107 @@
       display:none;
     }
 
-    .gameCard{flex:1.85; display:flex; flex-direction:column; gap:10px; padding:10px;}
-    canvas{
-      width:100%;
-      height:min(56dvh, 580px);
+    /* Inbox area */
+    .inboxTop{
+      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .inboxTitle{
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .inboxTitle .h{font-weight:950}
+    .inboxTitle .p{font-size:12px; color:var(--muted)}
+    .mailBox{
+      flex:1;
+      min-height:300px;
       border-radius:16px;
       border:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12));
+      background:linear-gradient(180deg, rgba(0,0,0,.10), rgba(255,255,255,.03));
       box-shadow:var(--shadow);
-      touch-action:none;
+      position:relative;
+      overflow:hidden;
     }
-    .controls{
+
+    /* Animated grid background inside mailbox */
+    .grid{
+      position:absolute; inset:0;
+      background:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity:.18;
+      transform: translateY(0);
+      animation: drift 6s linear infinite;
+    }
+    @keyframes drift{
+      from{ transform: translateY(0); }
+      to{ transform: translateY(28px); }
+    }
+
+    /* Email card */
+    .mail{
+      position:absolute;
+      left:50%;
+      top:55%;
+      transform: translate(-50%,-50%);
+      width:min(520px, 92%);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(255,255,255,.11), rgba(0,0,0,.12));
+      box-shadow:0 18px 50px rgba(0,0,0,.55);
+      padding:12px;
+      overflow:hidden;
+    }
+    .mail::before{
+      content:"";
+      position:absolute; inset:-40px -60px auto auto;
+      width:160px; height:160px;
+      background: radial-gradient(circle, rgba(51,214,255,.35), transparent 60%);
+      transform: rotate(18deg);
+      pointer-events:none;
+    }
+    .mailHead{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .chip{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.10);
+      color:var(--muted);
+      user-select:none;
+      display:flex; align-items:center; gap:8px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background:rgba(255,255,255,.40);
+      box-shadow:0 0 14px rgba(255,255,255,.15);
+    }
+    .dot.good{background:rgba(57,217,138,.9); box-shadow:0 0 14px rgba(57,217,138,.35);}
+    .dot.bad{background:rgba(255,92,122,.9); box-shadow:0 0 14px rgba(255,92,122,.35);}
+    .dot.warn{background:rgba(255,216,77,.95); box-shadow:0 0 14px rgba(255,216,77,.35);}
+
+    .mailFrom{font-weight:950; font-size:14px}
+    .mailSub{font-weight:850; font-size:13px; color:var(--muted)}
+    .mailBody{
+      margin-top:10px;
+      font-size:13px;
+      color:rgba(234,240,255,.92);
+      line-height:1.35;
+      background:rgba(0,0,0,.10);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    /* Action buttons */
+    .actions{
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap:10px;
-      align-items:stretch;
     }
-    .ctl{
+    .act{
       border-radius:16px;
       padding:14px 10px;
       border:1px solid rgba(255,255,255,.14);
@@ -177,36 +272,44 @@
       align-items:center;
       font-weight:950;
       text-align:center;
-      min-height:56px;
+      min-height:60px;
+      cursor:pointer;
+      transition: transform .06s ease, filter .12s ease;
     }
-    .ctl small{font-weight:700; color:var(--muted); line-height:1.2;}
-    .footerRow{
-      display:flex; gap:10px; flex-wrap:wrap;
-      justify-content:space-between; align-items:center;
-      padding:2px 2px 0;
+    .act:active{transform:translateY(1px)}
+    .act small{font-weight:750; color:var(--muted); line-height:1.2;}
+    .act.A{outline:1px solid rgba(124,92,255,.35)}
+    .act.B{outline:1px solid rgba(51,214,255,.35)}
+    .act.C{outline:1px solid rgba(255,122,217,.35)}
+    .act.disabled{
+      pointer-events:none;
+      opacity:.45;
+      filter: grayscale(0.35);
     }
-    .tiny{font-size:12px; color:var(--muted)}
 
+    /* Feedback popup */
     .pop{
       position:absolute;
-      left:50%; top:56%;
+      left:50%;
+      top:22%;
       transform:translate(-50%,-50%);
       padding:12px 14px;
       border-radius:18px;
       font-weight:950;
       display:none;
-      z-index:5;
+      z-index:10;
       border:1px solid rgba(255,255,255,.14);
       box-shadow:var(--shadow);
       backdrop-filter: blur(8px);
       text-align:center;
-      min-width:320px;
+      min-width:min(560px, 92%);
       user-select:none;
     }
     .pop.good{background:rgba(57,217,138,.20)}
     .pop.bad{background:rgba(255,92,122,.18)}
     .pop .why{display:block; margin-top:6px; font-size:12px; color:var(--muted); font-weight:800}
 
+    /* Overlay modal */
     .overlay{
       position:fixed; inset:0;
       display:none;
@@ -229,9 +332,9 @@
     .modal .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-top:12px;}
 
     @media (max-width: 900px){
-      .row{flex-direction:column}
-      canvas{height:min(52dvh, 500px);}
-      .qText{font-size:15px}
+      main{flex-direction:column}
+      .left,.right{min-width:unset}
+      .mailBox{min-height:320px}
     }
   </style>
 </head>
@@ -239,8 +342,8 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <div class="t">Cyber Pinball Quiz — GBL</div>
-      <div class="s">Read → Aim & Launch → Ball enters lane A/B/C → Instant feedback (controlled trajectory, fair)</div>
+      <div class="t">Secure Inbox Quiz — GBL</div>
+      <div class="s">Read → Decide → Tap A/B/C (explicit) → Feedback. Stable and mobile-friendly.</div>
     </div>
     <div class="hud">
       <div class="pill">Score: <b id="score">0</b></div>
@@ -252,44 +355,64 @@
   </header>
 
   <main>
-    <div class="row">
-      <section class="card qCard" aria-live="polite">
-        <div class="qTitle">
-          <div class="badge" id="topicBadge">Ready</div>
-          <div class="tiny muted">Hold to charge power, drag slightly to aim, release to launch.</div>
+    <section class="card left" aria-live="polite">
+      <div class="qTitle">
+        <div class="badge" id="topicBadge">Ready</div>
+        <div class="muted" style="font-size:12px">Choose A/B/C using buttons or keys (1/2/3 or A/B/C).</div>
+      </div>
+
+      <div class="qText" id="qText">Press Start to begin.</div>
+      <div class="choices" id="choices"></div>
+
+      <div class="readWrap" id="readWrap">
+        <div class="readLabel">
+          <span>Reading time…</span>
+          <span id="readSecs">0.0s</span>
         </div>
+        <div class="bar"><div id="readBar"></div></div>
+      </div>
 
-        <div class="qText" id="qText">Press Start to begin.</div>
-        <div class="choices" id="choices"></div>
+      <div class="statusLine" id="statusLine"></div>
+    </section>
 
-        <div class="readBarWrap" id="readWrap">
-          <div class="readLabel">
-            <span>Reading time…</span>
-            <span id="readSecs">0.0s</span>
-          </div>
-          <div class="bar"><div id="readBar"></div></div>
+    <section class="card right">
+      <div class="inboxTop">
+        <div class="inboxTitle">
+          <div class="h">Inbox Simulation</div>
+          <div class="p">The “email” is just a themed display. Your answer is A/B/C.</div>
         </div>
+        <button class="btn" id="startBtn">Start</button>
+      </div>
 
-        <div class="statusLine" id="statusLine"></div>
+      <div class="mailBox" id="mailBox">
+        <div class="grid"></div>
 
         <div class="pop" id="popup"></div>
-      </section>
 
-      <section class="card gameCard">
-        <canvas id="c"></canvas>
-
-        <div class="controls">
-          <div class="ctl" id="leftBtn" role="button" tabindex="0">Aim ◀ <small>←</small></div>
-          <div class="ctl" id="launchBtn" role="button" tabindex="0">Hold & Release <small>Space</small></div>
-          <div class="ctl" id="rightBtn" role="button" tabindex="0">Aim ▶ <small>→</small></div>
+        <div class="mail" id="mailCard" style="display:none;">
+          <div class="mailHead">
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <div class="mailFrom" id="mailFrom">system@uou.in</div>
+              <div class="mailSub" id="mailSub">Security Notice</div>
+            </div>
+            <div class="chip" id="riskChip"><span class="dot warn"></span><span>Awaiting decision</span></div>
+          </div>
+          <div class="mailBody" id="mailBody">
+            Read the question and choose the correct option A/B/C below.
+          </div>
         </div>
+      </div>
 
-        <div class="footerRow">
-          <div class="tiny">Tip: Tap on the canvas to aim. Release to launch. The ball will fairly go to your chosen lane.</div>
-          <button class="btn" id="startBtn">Start</button>
-        </div>
-      </section>
-    </div>
+      <div class="actions">
+        <div class="act A" id="actA" role="button" tabindex="0">Choose A <small>Key: 1 / A</small></div>
+        <div class="act B" id="actB" role="button" tabindex="0">Choose B <small>Key: 2 / B</small></div>
+        <div class="act C" id="actC" role="button" tabindex="0">Choose C <small>Key: 3 / C</small></div>
+      </div>
+
+      <div class="muted" style="font-size:12px; padding:0 2px;">
+        Tip: During reading time, buttons are disabled to avoid distraction.
+      </div>
+    </section>
   </main>
 </div>
 
@@ -298,17 +421,12 @@
     <h2 id="modalTitle">How to Play</h2>
     <div id="modalBody">
       <ul>
-        <li>A question appears and the game pauses for a few seconds so you can read.</li>
-        <li>Then aim and launch the glowing “data packet” ball toward lane <b>A</b>, <b>B</b>, or <b>C</b>.</li>
-        <li>Controls:
-          <ul>
-            <li><b>Mobile / Mouse:</b> press and hold to charge power, drag slightly left/right to aim, release to launch</li>
-            <li><b>Keyboard:</b> ← / → to aim, hold Space to charge, release Space to launch</li>
-          </ul>
-        </li>
-        <li>Correct lane: <b>+10</b>. Wrong lane: <b>0</b>. One launch per question.</li>
+        <li>The game pauses for a few seconds so you can read the MCQ properly.</li>
+        <li>After reading time ends, select <b>A</b>, <b>B</b>, or <b>C</b>.</li>
+        <li>Correct = <b>+10</b>, Wrong = <b>0</b>. One attempt per question.</li>
+        <li>Keyboard: <b>1/2/3</b> or <b>A/B/C</b>. Mobile: tap buttons.</li>
+        <li>At the end you can download a CSV log for analysis.</li>
       </ul>
-      <p class="muted">This pinball is “controlled” so your intended lane is always reachable (no unfair randomness).</p>
     </div>
     <div class="row">
       <button class="btn" id="closeModal">Close</button>
@@ -318,72 +436,61 @@
 
 <script>
 /* =========================================================
-   PARTICIPANT ID (optional): add ?pid=UOU123 in URL
+   Participant ID (optional): add ?pid=UOU123
    ========================================================= */
 const params = new URLSearchParams(location.search);
 const PID = params.get("pid") || "UOU-ANON";
 
 /* =========================================================
-   QUESTION BANK
-   Replace with your chapter-based MCQs.
-   IMPORTANT: store correct answer as correctText (not A/B/C fixed).
+   QUESTION BANK (replace with your chapter-based MCQs)
+   Store correct answer as correctText (not fixed A/B/C).
    ========================================================= */
 const QUESTION_BANK = [
   { id:"Q1", topic:"Smartphone Security",
     q:"Which practice best reduces risk from malicious apps?",
     options:["Install only from official stores","Disable screen lock","Keep Bluetooth always ON"],
     correctText:"Install only from official stores",
-    why:"Official stores reduce exposure to unknown, repackaged or malicious apps."
+    why:"Official stores reduce exposure to unknown or repackaged apps."
   },
   { id:"Q2", topic:"Android Security",
-    q:"Device encryption on Android primarily protects data:",
-    options:["When the device is lost or powered off","Only when Wi-Fi is on","Only inside a browser"],
-    correctText:"When the device is lost or powered off",
-    why:"Encryption protects stored data, especially if the device is stolen or offline."
+    q:"Device encryption mainly protects data:",
+    options:["When device is lost or powered off","Only when Wi-Fi is ON","Only inside browser"],
+    correctText:"When device is lost or powered off",
+    why:"Encryption protects stored data if the device is stolen or offline."
   },
   { id:"Q3", topic:"iOS Security",
-    q:"On iPhone, enabling a strong passcode improves:",
+    q:"A strong iPhone passcode improves:",
     options:["Data protection for stored content","Camera quality","Battery capacity"],
     correctText:"Data protection for stored content",
-    why:"A strong passcode strengthens iOS data protection mechanisms."
+    why:"Passcode strengthens iOS data protection mechanisms."
   },
   { id:"Q4", topic:"Smartphone Security",
-    q:"Using public Wi-Fi is risky mainly due to:",
-    options:["Possible interception and rogue access points","Lower screen brightness","Extra storage usage"],
-    correctText:"Possible interception and rogue access points",
-    why:"Public networks can be monitored or spoofed to capture traffic and credentials."
+    q:"Public Wi-Fi is risky mainly due to:",
+    options:["Interception and rogue access points","Lower brightness","Extra storage usage"],
+    correctText:"Interception and rogue access points",
+    why:"Public networks can be monitored or spoofed."
   },
   { id:"Q5", topic:"Android Security",
-    q:"Granting unnecessary app permissions can lead to:",
+    q:"Unnecessary app permissions can lead to:",
     options:["Data leakage and privacy loss","Faster charging","Better speaker sound"],
     correctText:"Data leakage and privacy loss",
     why:"Excess permissions may expose contacts, location, files, or messages."
   },
   { id:"Q6", topic:"iOS Security",
-    q:"A key benefit of “Find My iPhone” is:",
-    options:["Locate and remotely erase a lost phone","Increase download speed","Automatically jailbreak the phone"],
+    q:"A key benefit of Find My iPhone is:",
+    options:["Locate and remotely erase a lost phone","Increase download speed","Automatically jailbreak phone"],
     correctText:"Locate and remotely erase a lost phone",
-    why:"Find My supports location tracking and remote wipe to protect data."
-  },
-  { id:"Q7", topic:"Smartphone Security",
-    q:"Best immediate action when you suspect a phishing link was clicked?",
-    options:["Change passwords and enable 2FA","Turn up volume","Ignore and keep using normally"],
-    correctText:"Change passwords and enable 2FA",
-    why:"Credential reset and stronger authentication limit account takeover."
-  },
-  { id:"Q8", topic:"Android Security",
-    q:"Rooting a phone generally:",
-    options:["Increases attack surface by bypassing protections","Always improves security","Only changes wallpaper features"],
-    correctText:"Increases attack surface by bypassing protections",
-    why:"Rooting disables or weakens system security controls and app sandboxing."
-  },
-  { id:"Q9", topic:"iOS Security",
-    q:"Jailbreaking an iPhone typically:",
-    options:["Reduces built-in security restrictions","Is required for encryption","Prevents all malware"],
-    correctText:"Reduces built-in security restrictions",
-    why:"Jailbreak removes Apple restrictions and can weaken the security model."
+    why:"It supports location tracking and remote wipe."
   },
 ];
+
+/* =========================================================
+   Tuning
+   ========================================================= */
+const READ_PAUSE_MS = 4500;
+const ANSWER_TIMEOUT_MS = 16000;   // after read ends
+const FEEDBACK_MS = 900;
+const QUESTIONS_PER_RUN = Math.min(QUESTION_BANK.length, 10);
 
 /* =========================================================
    Helpers
@@ -396,12 +503,12 @@ function shuffle(arr){
   }
   return a;
 }
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[m]));
 }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 
 /* =========================================================
    UI refs
@@ -413,158 +520,35 @@ const qtotalEl= document.getElementById("qtotal");
 const topicBadge = document.getElementById("topicBadge");
 const qTextEl = document.getElementById("qText");
 const choicesEl = document.getElementById("choices");
-const popupEl = document.getElementById("popup");
 const readWrap = document.getElementById("readWrap");
 const readBar  = document.getElementById("readBar");
 const readSecs = document.getElementById("readSecs");
 const statusLine = document.getElementById("statusLine");
 
+const popupEl = document.getElementById("popup");
+const mailCard = document.getElementById("mailCard");
+const mailFrom = document.getElementById("mailFrom");
+const mailSub  = document.getElementById("mailSub");
+const mailBody = document.getElementById("mailBody");
+const riskChip = document.getElementById("riskChip");
+
+const actA = document.getElementById("actA");
+const actB = document.getElementById("actB");
+const actC = document.getElementById("actC");
+
 const overlay = document.getElementById("overlay");
 document.getElementById("howBtn").onclick = ()=> overlay.style.display="flex";
 document.getElementById("closeModal").onclick = ()=> overlay.style.display="none";
 
-/* =========================================================
-   Game tuning
-   ========================================================= */
-const READ_PAUSE_MS = 4500;          // guaranteed reading time
-const AIM_TIME_LIMIT_MS = 16000;     // after read ends
-const FEEDBACK_MS = 950;
-const QUESTIONS_PER_RUN = 9;         // adjust
-
-// Controlled pinball physics
-const DT = 1/60;
-const BALL_R = 10;
-const MAX_POWER = 18;               // launch speed scale
-const STEER_STRENGTH = 0.085;       // attraction to chosen lane (ensures fairness)
-const DRAG = 0.992;                 // slows gradually
-const BOUNCE = 0.82;                // wall bounce
-const BUMPER_BOUNCE = 1.05;         // bumper pop (mild)
-
-/* =========================================================
-   Canvas + board geometry
-   ========================================================= */
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
-
-function fitCanvas(){
-  const rect = canvas.getBoundingClientRect();
-  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-  canvas.width = Math.floor(rect.width * dpr);
-  canvas.height = Math.floor(rect.height * dpr);
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-}
-window.addEventListener("resize", ()=>{ fitCanvas(); initStars(); buildBoard(); resetBall(); });
-
-function cssVar(name){
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-
-let stars=[];
-function initStars(){
-  const r = canvas.getBoundingClientRect();
-  stars=[];
-  for(let i=0;i<70;i++){
-    stars.push({x:Math.random()*r.width, y:Math.random()*r.height*0.85, r:0.8+Math.random()*1.8, t:Math.random()*6.28});
-  }
-}
-
-/* Board parts (computed responsive) */
-const board = {
-  W:0,H:0,
-  pad:0,
-  laneY:0, laneH:0,
-  lanes:[],          // {key, x, w}
-  launcher:{x:0,y:0,w:0,h:0},
-  bumpers:[],        // {x,y,r}
-  walls:{left:0,right:0,top:0,bottom:0}
-};
-
-function buildBoard(){
-  const r = canvas.getBoundingClientRect();
-  board.W = r.width;
-  board.H = r.height;
-  board.pad = Math.round(Math.min(board.W, board.H) * 0.06);
-
-  board.walls = {
-    left: board.pad,
-    right: board.W - board.pad,
-    top: board.pad,
-    bottom: board.H - board.pad
-  };
-
-  // lanes at top
-  board.laneH = Math.round(board.H * 0.14);
-  board.laneY = board.walls.top + Math.round(board.H * 0.02);
-  const laneAreaW = board.walls.right - board.walls.left;
-  const laneW = laneAreaW / 3;
-
-  board.lanes = [
-    {key:"A", x:board.walls.left + laneW*0, w:laneW},
-    {key:"B", x:board.walls.left + laneW*1, w:laneW},
-    {key:"C", x:board.walls.left + laneW*2, w:laneW},
-  ];
-
-  // launcher at bottom center
-  const lw = Math.round(laneAreaW * 0.25);
-  const lh = Math.round(board.H * 0.16);
-  board.launcher = {
-    x: board.W/2 - lw/2,
-    y: board.walls.bottom - lh - Math.round(board.H*0.02),
-    w: lw,
-    h: lh
-  };
-
-  // mild bumpers (decor + tiny bounce) away from lane gates
-  const midY = board.laneY + board.laneH + (board.H*0.18);
-  board.bumpers = [
-    {x: board.W*0.30, y: midY, r: 18},
-    {x: board.W*0.50, y: midY + 50, r: 20},
-    {x: board.W*0.70, y: midY, r: 18},
-  ];
-}
-
-/* =========================================================
-   State
-   ========================================================= */
-const state = {
-  running:false,
-  phase:"menu", // menu | read | aim | flight | feedback | end
-  score:0, correct:0, attempted:0,
-  questions:[], qIndex:0, current:null,
-
-  // timing
-  readStart:0, readUntil:0,
-  aimStart:0, aimUntil:0,
-  decisionStart:0,
-
-  // launch intent
-  aimX:0,              // -1..+1
-  power:0,             // 0..1
-  charging:false,
-  chosenLane:null,     // "A"/"B"/"C" determined at release
-
-  // ball
-  ball:{x:0,y:0,vx:0,vy:0,active:false,trail:[]},
-
-  // fx
-  particles:[],
-  floatPop:[],
-
-  // logs
-  log:[]
-};
-
-function updateHUD(){
-  scoreEl.textContent = String(state.score);
-  const acc = state.attempted ? Math.round((state.correct/state.attempted)*100) : 0;
-  accEl.textContent = acc + "%";
-  qnumEl.textContent = String(state.attempted);
-  qtotalEl.textContent = String(state.questions.length);
-}
-
 function setStatus(text, show=true){
   statusLine.textContent = text;
   statusLine.style.display = show ? "block" : "none";
+}
+
+function setActionsEnabled(on){
+  [actA,actB,actC].forEach(el=>{
+    el.classList.toggle("disabled", !on);
+  });
 }
 
 function showPopup(ok, correctKey, why){
@@ -575,11 +559,16 @@ function showPopup(ok, correctKey, why){
   setTimeout(()=> popupEl.style.display="none", FEEDBACK_MS);
 }
 
+function setChip(kind, text){
+  const dotClass = kind==="good" ? "dot good" : kind==="bad" ? "dot bad" : "dot warn";
+  riskChip.innerHTML = `<span class="${dotClass}"></span><span>${escapeHtml(text)}</span>`;
+}
+
 /* =========================================================
-   Question prep: shuffle options + balance correct letters
+   Balanced option order (fixes “A is usually correct” bias)
    ========================================================= */
 function prepareQuestionsBalanced(){
-  const selected = shuffle(QUESTION_BANK).slice(0, Math.min(QUESTIONS_PER_RUN, QUESTION_BANK.length));
+  const selected = shuffle(QUESTION_BANK).slice(0, QUESTIONS_PER_RUN);
   const n = selected.length;
 
   const base = Math.floor(n/3);
@@ -605,6 +594,7 @@ function prepareQuestionsBalanced(){
       }
       if(!picked) picked = {map, correct};
     }
+
     used[picked.correct]++;
 
     return {
@@ -617,172 +607,127 @@ function prepareQuestionsBalanced(){
   });
 }
 
+/* =========================================================
+   State
+   ========================================================= */
+const state = {
+  running:false,
+  phase:"menu", // menu | read | answer | feedback | end
+  score:0, correct:0, attempted:0,
+  questions:[], qIndex:0, current:null,
+
+  readStart:0, readUntil:0,
+  answerStart:0, answerUntil:0,
+  decisionStart:0,
+
+  log:[]
+};
+
+function updateHUD(){
+  scoreEl.textContent = String(state.score);
+  const acc = state.attempted ? Math.round((state.correct/state.attempted)*100) : 0;
+  accEl.textContent = acc + "%";
+  qnumEl.textContent = String(state.attempted);
+  qtotalEl.textContent = String(state.questions.length);
+}
+
+/* =========================================================
+   Rendering
+   ========================================================= */
 function renderQuestion(q){
   state.current = q;
   topicBadge.textContent = q.topic;
   qTextEl.textContent = q.q;
+
   choicesEl.innerHTML = `
     <div class="choice"><div class="tag A">A</div><div><b>${escapeHtml(q.A)}</b></div></div>
     <div class="choice"><div class="tag B">B</div><div><b>${escapeHtml(q.B)}</b></div></div>
     <div class="choice"><div class="tag C">C</div><div><b>${escapeHtml(q.C)}</b></div></div>
   `;
+
+  // Themed inbox card (purely visual)
+  mailCard.style.display = "block";
+  mailFrom.textContent = "alerts@mobile-security.uou";
+  mailSub.textContent = `Action required: ${q.topic}`;
+  mailBody.textContent = q.q;
+  setChip("warn","Awaiting your decision");
 }
 
 /* =========================================================
-   Ball / Launch logic
+   Flow
    ========================================================= */
-function resetBall(){
-  const L = board.launcher;
-  state.ball.x = L.x + L.w/2;
-  state.ball.y = L.y + L.h - 18;
-  state.ball.vx = 0;
-  state.ball.vy = 0;
-  state.ball.active = false;
-  state.ball.trail = [];
-  state.chosenLane = null;
-  state.aimX = 0;
-  state.power = 0;
-  state.charging = false;
+function startQuestion(){
+  if(state.qIndex >= state.questions.length){
+    endGame();
+    return;
+  }
+
+  popupEl.style.display="none";
+  setStatus("", false);
+  setActionsEnabled(false);
+
+  const q = state.questions[state.qIndex++];
+  renderQuestion(q);
+
+  // READ phase
+  state.phase = "read";
+  state.readStart = performance.now();
+  state.readUntil = state.readStart + READ_PAUSE_MS;
+
+  readWrap.style.display = "block";
+  readBar.style.width = "0%";
+  readSecs.textContent = (READ_PAUSE_MS/1000).toFixed(1) + "s";
+  setStatus("Reading time… buttons disabled.", true);
+
+  setTimeout(()=>{
+    if(!state.running) return;
+    if(state.phase !== "read") return;
+
+    // ANSWER phase
+    readWrap.style.display = "none";
+    state.phase = "answer";
+    state.answerStart = performance.now();
+    state.answerUntil = state.answerStart + ANSWER_TIMEOUT_MS;
+    state.decisionStart = performance.now();
+
+    setActionsEnabled(true);
+    setStatus("Select A, B, or C now.", true);
+    setChip("warn","Decision window open");
+
+    // auto-timeout
+    setTimeout(()=>{
+      if(state.phase === "answer"){
+        recordNoAnswer("Time expired (no selection).");
+      }
+    }, ANSWER_TIMEOUT_MS);
+
+  }, READ_PAUSE_MS);
 }
 
-function laneFromAim(aimX){
-  // aimX in [-1..+1]
-  if(aimX < -0.22) return "A";
-  if(aimX >  0.22) return "C";
-  return "B";
-}
-
-function laneCenterX(key){
-  const lane = board.lanes.find(l=>l.key===key);
-  return lane.x + lane.w/2;
-}
-
-function launchBall(){
-  if(state.phase !== "aim") return;
-
-  // determine intent at release
-  state.chosenLane = laneFromAim(state.aimX);
-
-  const speed = 8 + (MAX_POWER-8) * state.power; // min + scaled
-  // base direction upwards, small horizontal based on aim
-  const dx = clamp(state.aimX, -1, 1);
-  state.ball.vx = dx * (speed * 0.55);
-  state.ball.vy = -speed;
-
-  state.ball.active = true;
-  state.phase = "flight";
-
-  setStatus(`Launched toward lane ${state.chosenLane}.`, true);
+function nextQuestion(){
+  popupEl.style.display="none";
+  setStatus("", false);
+  setTimeout(()=> startQuestion(), 650);
 }
 
 /* =========================================================
-   Input (mouse/touch + keyboard fallback)
+   Answer handling
    ========================================================= */
-const input = {left:false, right:false, spaceDown:false};
+function recordAnswer(letter){
+  if(state.phase !== "answer") return;
 
-window.addEventListener("keydown",(e)=>{
-  const k=e.code;
-  if(["ArrowLeft","ArrowRight","Space"].includes(k)) e.preventDefault();
-  if(k==="ArrowLeft") input.left=true;
-  if(k==="ArrowRight") input.right=true;
+  setActionsEnabled(false);
 
-  if(k==="Space"){
-    if(state.phase==="aim" && !input.spaceDown){
-      input.spaceDown = true;
-      startCharging();
-    }
-  }
-});
-window.addEventListener("keyup",(e)=>{
-  const k=e.code;
-  if(k==="ArrowLeft") input.left=false;
-  if(k==="ArrowRight") input.right=false;
-
-  if(k==="Space"){
-    if(state.phase==="aim" && input.spaceDown){
-      input.spaceDown = false;
-      stopChargingAndLaunch();
-    }
-  }
-});
-
-function bindHold(btn, onDown, onUp){
-  btn.addEventListener("pointerdown",(e)=>{ e.preventDefault(); onDown(); });
-  btn.addEventListener("pointerup",(e)=>{ e.preventDefault(); onUp(); });
-  btn.addEventListener("pointercancel",(e)=>{ e.preventDefault(); onUp(); });
-}
-bindHold(document.getElementById("leftBtn"), ()=>input.left=true, ()=>input.left=false);
-bindHold(document.getElementById("rightBtn"),()=>input.right=true,()=>input.right=false);
-
-// Launch button: hold/release
-bindHold(document.getElementById("launchBtn"), ()=>startCharging(), ()=>stopChargingAndLaunch());
-
-function pointerPos(ev){
-  const rect = canvas.getBoundingClientRect();
-  const x = (ev.clientX - rect.left);
-  const y = (ev.clientY - rect.top);
-  return {x,y};
-}
-
-canvas.addEventListener("pointerdown",(e)=>{
-  canvas.setPointerCapture(e.pointerId);
-  if(state.phase !== "aim") return;
-
-  const p = pointerPos(e);
-  // only charge if near launcher area (reduces accidental)
-  const L = board.launcher;
-  const inLauncher = (p.x >= L.x-30 && p.x <= L.x+L.w+30 && p.y >= L.y-20 && p.y <= L.y+L.h+30);
-
-  // allow aiming even if not charging
-  updateAimFromX(p.x);
-
-  if(inLauncher){
-    startCharging();
-  }
-});
-canvas.addEventListener("pointermove",(e)=>{
-  if(state.phase !== "aim") return;
-  const p = pointerPos(e);
-  updateAimFromX(p.x);
-});
-canvas.addEventListener("pointerup",(e)=>{
-  if(state.phase !== "aim") return;
-  if(state.charging) stopChargingAndLaunch();
-});
-
-function updateAimFromX(x){
-  const mid = board.W/2;
-  const span = board.W*0.34;
-  state.aimX = clamp((x - mid)/span, -1, 1);
-}
-
-function startCharging(){
-  if(state.phase !== "aim") return;
-  state.charging = true;
-}
-function stopChargingAndLaunch(){
-  if(state.phase !== "aim") return;
-  if(!state.charging) return;
-  state.charging = false;
-  launchBall();
-}
-
-/* =========================================================
-   Answer handling + logging
-   ========================================================= */
-function scoreForLane(selectedLane){
   const q = state.current;
-  const ok = (selectedLane === q.correct);
+  const ok = (letter === q.correct);
 
   state.attempted++;
   if(ok){
     state.correct++;
     state.score += 10;
-    addFloatPop(board.W*0.5, board.H*0.52, "+10", "rgba(57,217,138,.95)", 700);
-    burst(board.W*0.5, board.H*0.48, "rgba(57,217,138,.95)");
+    setChip("good","Approved safe action");
   }else{
-    addFloatPop(board.W*0.5, board.H*0.52, "0", "rgba(255,255,255,.85)", 650);
-    burst(board.W*0.5, board.H*0.48, "rgba(255,92,122,.95)");
+    setChip("bad","Unsafe action detected");
   }
 
   const rt = Math.max(0, Math.round(performance.now() - state.decisionStart));
@@ -793,8 +738,7 @@ function scoreForLane(selectedLane){
     qid: q.id,
     topic: q.topic,
     option_order: `A:${q.A} | B:${q.B} | C:${q.C}`,
-    selected: selectedLane,
-    intended: state.chosenLane || "NA",
+    selected: letter,
     correct: q.correct,
     is_correct: ok ? 1 : 0,
     response_ms: rt,
@@ -808,8 +752,10 @@ function scoreForLane(selectedLane){
   setTimeout(()=> nextQuestion(), FEEDBACK_MS);
 }
 
-function noAnswer(reason){
-  if(state.phase === "feedback" || state.phase === "end") return;
+function recordNoAnswer(reason){
+  if(state.phase !== "answer") return;
+
+  setActionsEnabled(false);
 
   state.attempted++;
   const q = state.current;
@@ -822,7 +768,6 @@ function noAnswer(reason){
     topic: q.topic,
     option_order: `A:${q.A} | B:${q.B} | C:${q.C}`,
     selected: "NA",
-    intended: "NA",
     correct: q.correct,
     is_correct: 0,
     response_ms: rt,
@@ -830,494 +775,53 @@ function noAnswer(reason){
   });
 
   updateHUD();
+  setChip("bad","No decision recorded");
   showPopup(false, q.correct, reason || "No answer recorded.");
   state.phase = "feedback";
   setTimeout(()=> nextQuestion(), FEEDBACK_MS);
 }
 
-/* =========================================================
-   VFX
-   ========================================================= */
-function addFloatPop(x, y, text, color, ms=650){
-  state.floatPop.push({x,y,text,color,until:performance.now()+ms});
-}
-function burst(x,y,color){
-  for(let i=0;i<18;i++){
-    const a = Math.random()*Math.PI*2;
-    const sp = 1.6 + Math.random()*3.2;
-    state.particles.push({
-      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-1.2,
-      born:performance.now(), life:520+Math.random()*300,
-      color, r:1.6+Math.random()*2.4
-    });
-  }
-}
+/* Buttons + keyboard */
+actA.onclick = ()=> recordAnswer("A");
+actB.onclick = ()=> recordAnswer("B");
+actC.onclick = ()=> recordAnswer("C");
+
+window.addEventListener("keydown",(e)=>{
+  if(state.phase !== "answer") return;
+  const k = e.code;
+  if(["Digit1","Digit2","Digit3","KeyA","KeyB","KeyC"].includes(k)) e.preventDefault();
+  if(k==="Digit1" || k==="KeyA") recordAnswer("A");
+  if(k==="Digit2" || k==="KeyB") recordAnswer("B");
+  if(k==="Digit3" || k==="KeyC") recordAnswer("C");
+});
 
 /* =========================================================
-   Simulation step
+   End + CSV
    ========================================================= */
-function stepAim(now){
-  // keyboard aim adjust
-  if(input.left) state.aimX = clamp(state.aimX - 0.03, -1, 1);
-  if(input.right) state.aimX = clamp(state.aimX + 0.03, -1, 1);
-
-  // charging power
-  if(state.charging){
-    state.power = clamp(state.power + 0.015, 0, 1);
-  }else{
-    // small decay to avoid accidental full power
-    state.power = clamp(state.power - 0.010, 0, 1);
+function downloadCSV(){
+  const rows = [["ts","pid","qid","topic","option_order","selected","correct","is_correct","response_ms","score_after"]];
+  for(const r of state.log){
+    rows.push([r.ts,r.pid,r.qid,r.topic,r.option_order,r.selected,r.correct,r.is_correct,r.response_ms,r.score_after]);
   }
-
-  // timeout after read
-  if(performance.now() >= state.aimUntil){
-    noAnswer("Time expired (no launch).");
-  }
-}
-
-function collideWalls(){
-  const b = state.ball;
-  const W = board.walls;
-
-  if(b.x - BALL_R < W.left){
-    b.x = W.left + BALL_R;
-    b.vx = Math.abs(b.vx) * BOUNCE;
-  }
-  if(b.x + BALL_R > W.right){
-    b.x = W.right - BALL_R;
-    b.vx = -Math.abs(b.vx) * BOUNCE;
-  }
-  if(b.y - BALL_R < W.top){
-    b.y = W.top + BALL_R;
-    b.vy = Math.abs(b.vy) * BOUNCE;
-  }
-  if(b.y + BALL_R > W.bottom){
-    // fell back to bottom without choosing lane: NA
-    b.y = W.bottom - BALL_R;
-    b.vy *= -0.3;
-    b.vx *= 0.6;
-    // if it has been long, treat as NA
-    noAnswer("Ball did not enter any lane.");
-  }
-}
-
-function collideBumpers(){
-  const b = state.ball;
-  for(const bm of board.bumpers){
-    const dx = b.x - bm.x;
-    const dy = b.y - bm.y;
-    const dist = Math.hypot(dx,dy);
-    const minD = BALL_R + bm.r;
-    if(dist < minD){
-      // push out
-      const nx = dx / (dist || 1);
-      const ny = dy / (dist || 1);
-      b.x = bm.x + nx * (minD + 0.5);
-      b.y = bm.y + ny * (minD + 0.5);
-
-      // reflect velocity
-      const dot = b.vx*nx + b.vy*ny;
-      b.vx = (b.vx - 2*dot*nx) * BUMPER_BOUNCE;
-      b.vy = (b.vy - 2*dot*ny) * BUMPER_BOUNCE;
-
-      burst(bm.x, bm.y, "rgba(51,214,255,.75)");
-    }
-  }
-}
-
-function checkLaneEntry(){
-  const b = state.ball;
-  const laneY0 = board.laneY;
-  const laneY1 = board.laneY + board.laneH;
-
-  // lane gate region
-  if(b.y - BALL_R <= laneY1 && b.y + BALL_R >= laneY0){
-    // determine which lane by x
-    for(const lane of board.lanes){
-      if(b.x >= lane.x && b.x <= lane.x + lane.w){
-        // lane entered
-        state.ball.active = false;
-        burst(b.x, b.y, "rgba(255,255,255,.85)");
-        scoreForLane(lane.key);
-        break;
-      }
-    }
-  }
-}
-
-function steerTowardChosenLane(){
-  const b = state.ball;
-  if(!state.chosenLane) return;
-
-  // attraction to chosen lane center (gentle, prevents unfair drift)
-  const targetX = laneCenterX(state.chosenLane);
-  const dx = targetX - b.x;
-  b.vx += dx * STEER_STRENGTH * 0.0028; // tiny influence each step
-
-  // keep upward tendency so it reaches lanes
-  // (prevents shallow shots that hover)
-  if(b.vy > -2) b.vy -= 0.06;
-}
-
-function stepFlight(){
-  const b = state.ball;
-  if(!b.active) return;
-
-  // mild steering for fairness
-  steerTowardChosenLane();
-
-  // integrate
-  b.x += b.vx;
-  b.y += b.vy;
-
-  // drag
-  b.vx *= DRAG;
-  b.vy *= DRAG;
-
-  // walls + bumpers
-  collideWalls();
-  collideBumpers();
-
-  // trail
-  b.trail.push({x:b.x,y:b.y, t:performance.now()});
-  if(b.trail.length > 18) b.trail.shift();
-
-  checkLaneEntry();
-}
-
-/* =========================================================
-   Drawing
-   ========================================================= */
-function roundRect(x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r);
-  ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r);
-  ctx.arcTo(x,y,x+w,y,r);
-  ctx.closePath();
-}
-
-function drawStars(now){
-  const r = canvas.getBoundingClientRect();
-  for(const s of stars){
-    const tw = 0.45 + 0.55*Math.sin(now/700 + s.t);
-    ctx.globalAlpha = 0.18 + tw*0.60;
-    ctx.fillStyle = "rgba(255,255,255,.95)";
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawBoardFrame(){
-  const W = board.W, H = board.H;
-  const pad = board.pad;
-
-  // outer glow
-  ctx.globalAlpha = 0.25;
-  ctx.fillStyle = "rgba(124,92,255,.45)";
-  roundRect(pad-8, pad-8, W-2*(pad-8), H-2*(pad-8), 20);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-
-  // inner frame
-  const g = ctx.createLinearGradient(0, pad, 0, H-pad);
-  g.addColorStop(0,"rgba(255,255,255,.08)");
-  g.addColorStop(1,"rgba(0,0,0,.18)");
-  ctx.fillStyle = g;
-  roundRect(pad, pad, W-2*pad, H-2*pad, 18);
-  ctx.fill();
-
-  // subtle grid
-  ctx.globalAlpha = 0.10;
-  ctx.strokeStyle = "rgba(255,255,255,.45)";
-  ctx.lineWidth = 1;
-  for(let x=pad+10; x<W-pad; x+=28){
-    ctx.beginPath(); ctx.moveTo(x,pad+10); ctx.lineTo(x,H-pad-10); ctx.stroke();
-  }
-  for(let y=pad+10; y<H-pad; y+=28){
-    ctx.beginPath(); ctx.moveTo(pad+10,y); ctx.lineTo(W-pad-10,y); ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawLanes(now){
-  const laneY = board.laneY;
-  const laneH = board.laneH;
-
-  for(const lane of board.lanes){
-    const pulse = 0.35 + 0.25*Math.sin(now/240 + (lane.key.charCodeAt(0)%7));
-    // glow
-    ctx.globalAlpha = pulse;
-    ctx.fillStyle = "rgba(255,255,255,.12)";
-    roundRect(lane.x+6, laneY+6, lane.w-12, laneH-12, 16);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // border
-    ctx.strokeStyle = "rgba(255,255,255,.22)";
-    ctx.lineWidth = 2;
-    roundRect(lane.x+8, laneY+8, lane.w-16, laneH-16, 16);
-    ctx.stroke();
-
-    // label
-    const color = lane.key==="A" ? cssVar("--a") : lane.key==="B" ? cssVar("--b") : cssVar("--c");
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.90;
-    ctx.font = "950 22px system-ui,Segoe UI,Arial";
-    ctx.fillText(lane.key, lane.x + lane.w/2 - 7, laneY + laneH/2 + 8);
-    ctx.globalAlpha = 1;
-  }
-}
-
-function drawBumpers(){
-  for(const bm of board.bumpers){
-    ctx.globalAlpha = 0.20;
-    ctx.fillStyle = "rgba(51,214,255,.9)";
-    ctx.beginPath();
-    ctx.arc(bm.x, bm.y, bm.r+10, 0, Math.PI*2);
-    ctx.fill();
-
-    ctx.globalAlpha = 1;
-    const g = ctx.createRadialGradient(bm.x-6, bm.y-6, 2, bm.x, bm.y, bm.r);
-    g.addColorStop(0,"rgba(255,255,255,.40)");
-    g.addColorStop(1,"rgba(51,214,255,.08)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(bm.x, bm.y, bm.r, 0, Math.PI*2);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,255,255,.18)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(bm.x, bm.y, bm.r, 0, Math.PI*2);
-    ctx.stroke();
-  }
-}
-
-function drawLauncher(){
-  const L = board.launcher;
-
-  // base
-  ctx.globalAlpha = 1;
-  const g = ctx.createLinearGradient(L.x, L.y, L.x, L.y+L.h);
-  g.addColorStop(0,"rgba(255,255,255,.10)");
-  g.addColorStop(1,"rgba(0,0,0,.20)");
-  ctx.fillStyle = g;
-  roundRect(L.x, L.y, L.w, L.h, 16);
-  ctx.fill();
-
-  ctx.strokeStyle = "rgba(255,255,255,.14)";
-  ctx.lineWidth = 2;
-  roundRect(L.x+2, L.y+2, L.w-4, L.h-4, 14);
-  ctx.stroke();
-
-  // aim guide
-  const midX = L.x + L.w/2;
-  const midY = L.y + 22;
-  const aimLen = 95 + state.power*55;
-  const dx = state.aimX;
-
-  ctx.globalAlpha = 0.65;
-  ctx.strokeStyle = "rgba(255,216,77,.65)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(midX, midY);
-  ctx.lineTo(midX + dx*aimLen*0.55, midY - aimLen);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-
-  // power bar
-  const barW = L.w*0.78;
-  const barX = L.x + (L.w-barW)/2;
-  const barY = L.y + L.h - 18;
-  ctx.globalAlpha = 0.75;
-  ctx.fillStyle = "rgba(255,255,255,.12)";
-  roundRect(barX, barY, barW, 10, 999);
-  ctx.fill();
-  ctx.fillStyle = "rgba(255,216,77,.85)";
-  roundRect(barX, barY, barW*state.power, 10, 999);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-}
-
-function drawBall(now){
-  const b = state.ball;
-
-  // trail
-  for(let i=0;i<b.trail.length;i++){
-    const p = b.trail[i];
-    const age = (now - p.t);
-    const a = clamp(1 - age/380, 0, 1);
-    ctx.globalAlpha = a*0.35;
-    ctx.fillStyle = "rgba(51,214,255,.95)";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, BALL_R*(0.6 + i/b.trail.length*0.4), 0, Math.PI*2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-
-  // glow
-  ctx.globalAlpha = 0.30;
-  ctx.fillStyle = "rgba(51,214,255,.9)";
-  ctx.beginPath();
-  ctx.arc(b.x, b.y, BALL_R+10, 0, Math.PI*2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-
-  // core ball
-  const g = ctx.createRadialGradient(b.x-4, b.y-4, 2, b.x, b.y, BALL_R);
-  g.addColorStop(0,"rgba(255,255,255,.92)");
-  g.addColorStop(1,"rgba(51,214,255,.45)");
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(b.x, b.y, BALL_R, 0, Math.PI*2);
-  ctx.fill();
-
-  // tiny “packet” ring
-  ctx.strokeStyle = "rgba(255,255,255,.22)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(b.x, b.y, BALL_R-2, 0, Math.PI*2);
-  ctx.stroke();
-}
-
-function drawFX(now){
-  // particles
-  state.particles = state.particles.filter(pt => (now - pt.born) < pt.life);
-  for(const pt of state.particles){
-    const t = (now - pt.born) / pt.life;
-    pt.x += pt.vx;
-    pt.y += pt.vy;
-    pt.vy += 0.06;
-
-    ctx.globalAlpha = (1-t);
-    ctx.fillStyle = pt.color;
-    ctx.beginPath();
-    ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI*2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-
-  // float pops
-  state.floatPop = state.floatPop.filter(p => now < p.until);
-  for(const p of state.floatPop){
-    const t = 1 - ((p.until - now)/650);
-    ctx.globalAlpha = 1 - t;
-    ctx.fillStyle = p.color;
-    ctx.font = "950 18px system-ui,Segoe UI,Arial";
-    ctx.fillText(p.text, p.x - 14, p.y - t*22);
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawPhaseHint(now){
-  const W = board.W, H = board.H;
-  ctx.globalAlpha = 1;
-
-  ctx.fillStyle = "rgba(255,255,255,.08)";
-  ctx.fillRect(0, H-40, W, 40);
-
-  ctx.fillStyle = "rgba(234,240,255,.92)";
-  ctx.font = "900 12px system-ui,Segoe UI,Arial";
-
-  if(state.phase==="read"){
-    ctx.fillText("Reading time… (launch disabled)", 12, H-16);
-  }else if(state.phase==="aim"){
-    const lane = laneFromAim(state.aimX);
-    ctx.fillText(`Aim: ${lane}  |  Hold to charge, release to launch`, 12, H-16);
-  }else if(state.phase==="flight"){
-    ctx.fillText(`Ball in motion…`, 12, H-16);
-  }else{
-    ctx.fillText("Cyber Pinball Quiz", 12, H-16);
-  }
-}
-
-function draw(now){
-  // clear
-  const r = canvas.getBoundingClientRect();
-  ctx.clearRect(0,0,r.width,r.height);
-
-  // background stars
-  drawStars(now);
-
-  // board
-  drawBoardFrame();
-  drawLanes(now);
-  drawBumpers();
-
-  // launcher + ball
-  drawLauncher();
-  if(state.phase==="aim" || state.phase==="flight" || state.phase==="feedback"){
-    drawBall(now);
-  }
-
-  // fx
-  drawFX(now);
-
-  drawPhaseHint(now);
-}
-
-/* =========================================================
-   Flow control
-   ========================================================= */
-function startQuestion(){
-  if(state.qIndex >= state.questions.length){
-    endGame();
-    return;
-  }
-
-  popupEl.style.display="none";
-  setStatus("", false);
-
-  const q = state.questions[state.qIndex++];
-  renderQuestion(q);
-
-  // read phase
-  state.phase = "read";
-  state.readStart = performance.now();
-  state.readUntil = state.readStart + READ_PAUSE_MS;
-
-  readWrap.style.display = "block";
-  readBar.style.width = "0%";
-  readSecs.textContent = (READ_PAUSE_MS/1000).toFixed(1) + "s";
-
-  // reset ball to launcher
-  resetBall();
-
-  // transition to aim at end of read
-  setTimeout(()=>{
-    if(!state.running) return;
-    if(state.phase !== "read") return;
-
-    readWrap.style.display = "none";
-    state.phase = "aim";
-    state.aimStart = performance.now();
-    state.aimUntil = state.aimStart + AIM_TIME_LIMIT_MS;
-    state.decisionStart = performance.now(); // RT measured from start of aim
-    setStatus("Aim and launch into lane A/B/C.", true);
-  }, READ_PAUSE_MS);
-}
-
-function nextQuestion(){
-  resetBall();
-  setStatus("", false);
-  setTimeout(()=> startQuestion(), 650);
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href=url; a.download="Secure_Inbox_Quiz_Log.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function endGame(){
   state.running = false;
   state.phase = "end";
+  setActionsEnabled(false);
   readWrap.style.display = "none";
   setStatus("", false);
 
   const acc = state.attempted ? Math.round((state.correct/state.attempted)*100) : 0;
-  const modalTitle = document.getElementById("modalTitle");
-  const modalBody  = document.getElementById("modalBody");
-  modalTitle.textContent = "Run Completed";
-  modalBody.innerHTML = `
+  document.getElementById("modalTitle").textContent = "Run Completed";
+  document.getElementById("modalBody").innerHTML = `
     <p><b>Participant:</b> ${escapeHtml(PID)}</p>
     <p><b>Score:</b> ${state.score} &nbsp; | &nbsp; <b>Accuracy:</b> ${acc}% &nbsp; | &nbsp; <b>Attempted:</b> ${state.attempted}</p>
     <p class="muted">Download CSV for analysis.</p>
@@ -1327,45 +831,6 @@ function endGame(){
   `;
   overlay.style.display="flex";
   setTimeout(()=> document.getElementById("dlBtn").onclick = downloadCSV, 0);
-}
-
-function downloadCSV(){
-  const rows = [["ts","pid","qid","topic","option_order","selected","intended","correct","is_correct","response_ms","score_after"]];
-  for(const r of state.log){
-    rows.push([r.ts,r.pid,r.qid,r.topic,r.option_order,r.selected,r.intended,r.correct,r.is_correct,r.response_ms,r.score_after]);
-  }
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href=url; a.download="Cyber_Pinball_Quiz_Log.csv";
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/* =========================================================
-   Main loop
-   ========================================================= */
-function loop(now){
-  if(state.running){
-    if(state.phase==="read"){
-      const total = state.readUntil - state.readStart;
-      const done = clamp(now - state.readStart, 0, total);
-      const pct = total > 0 ? (done/total)*100 : 100;
-      readBar.style.width = pct.toFixed(1) + "%";
-      readSecs.textContent = Math.max(0, (total - done)/1000).toFixed(1) + "s";
-    }
-
-    if(state.phase==="aim"){
-      stepAim(now);
-    }else if(state.phase==="flight"){
-      // run a few sub-steps for stability
-      for(let i=0;i<1;i++) stepFlight();
-    }
-  }
-
-  draw(now);
-  requestAnimationFrame(loop);
 }
 
 /* =========================================================
@@ -1379,8 +844,6 @@ function boot(){
   state.attempted = 0;
   state.qIndex = 0;
   state.log = [];
-  state.particles = [];
-  state.floatPop = [];
 
   state.questions = prepareQuestionsBalanced();
   qtotalEl.textContent = String(state.questions.length);
@@ -1390,32 +853,25 @@ function boot(){
   choicesEl.innerHTML = "";
   popupEl.style.display="none";
   readWrap.style.display="none";
+  mailCard.style.display="none";
+  setActionsEnabled(false);
+  setChip("warn","Idle");
   setStatus("", false);
 
-  resetBall();
   updateHUD();
 }
 
 function startGame(){
-  overlay.style.display="none";
+  overlay.style.display = "none";
   state.running = true;
-  state.phase = "read";
   setStatus("Starting…", true);
-  setTimeout(()=> startQuestion(), 450);
+  setTimeout(()=> startQuestion(), 350);
 }
 
-document.getElementById("restartBtn").onclick = ()=>{ overlay.style.display="none"; boot(); };
-document.getElementById("startBtn").onclick = ()=>{ if(!state.running) startGame(); };
+document.getElementById("restartBtn").onclick = ()=> { overlay.style.display="none"; boot(); };
+document.getElementById("startBtn").onclick = ()=> { if(!state.running) startGame(); };
 
-/* =========================================================
-   Init
-   ========================================================= */
-fitCanvas();
-initStars();
-buildBoard();
 boot();
-requestAnimationFrame(loop);
 </script>
 </body>
 </html>
-```
