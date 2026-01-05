@@ -323,42 +323,188 @@ const PID = params.get("pid") || "UOU-ANON";
    Question bank (replace later with chapter MCQs)
    Correct is stored as correctText, not fixed A/B/C.
    =========================== */
-const QUESTION_BANK = [
-  { id:"Q1", topic:"Smartphone Security",
+  const QUESTION_BANK = [
+  // --- Smartphone Security ---
+  {
+    id:"Q1", topic:"Smartphone Security",
     q:"Which practice best reduces risk from malicious apps?",
     options:["Install only from official stores","Disable screen lock","Keep Bluetooth always ON"],
     correctText:"Install only from official stores",
-    why:"Official stores reduce exposure to unknown, repackaged, or malicious apps."
+    why:"Official stores reduce exposure to repackaged or malicious apps."
   },
-  { id:"Q2", topic:"Android Security",
+  {
+    id:"Q2", topic:"Smartphone Security",
+    q:"What is the safest way to protect your phone when you are not using it?",
+    options:["Enable screen lock with PIN/biometric","Turn off all updates","Share password with friends"],
+    correctText:"Enable screen lock with PIN/biometric",
+    why:"A strong lock prevents unauthorized access if the phone is lost."
+  },
+  {
+    id:"Q3", topic:"Smartphone Security",
+    q:"Which action most helps to avoid phishing on a phone?",
+    options:["Verify links and sender before clicking","Click quickly to avoid session timeout","Disable browser warnings"],
+    correctText:"Verify links and sender before clicking",
+    why:"Phishing relies on hurried clicks and fake links."
+  },
+  {
+    id:"Q4", topic:"Smartphone Security",
+    q:"Public Wi-Fi is risky mainly because of:",
+    options:["Interception and rogue access points","More storage usage","Higher screen brightness"],
+    correctText:"Interception and rogue access points",
+    why:"Attackers can sniff traffic or run fake hotspots."
+  },
+  {
+    id:"Q5", topic:"Smartphone Security",
+    q:"Which is a strong indicator of a risky app on a phone?",
+    options:["Requests permissions unrelated to its function","Has a dark theme option","Supports multiple languages"],
+    correctText:"Requests permissions unrelated to its function",
+    why:"Unnecessary permissions can enable data access beyond need."
+  },
+  {
+    id:"Q6", topic:"Smartphone Security",
+    q:"Which step best reduces risk if your phone is stolen?",
+    options:["Enable remote locate/wipe feature","Disable all security features","Save passwords in Notes app"],
+    correctText:"Enable remote locate/wipe feature",
+    why:"Remote wipe helps protect personal data after theft."
+  },
+  {
+    id:"Q7", topic:"Smartphone Security",
+    q:"Why should you keep your phone OS updated?",
+    options:["Updates patch security vulnerabilities","Updates always increase RAM","Updates remove the need for antivirus"],
+    correctText:"Updates patch security vulnerabilities",
+    why:"Many updates fix known security flaws."
+  },
+  {
+    id:"Q8", topic:"Smartphone Security",
+    q:"Which is the best practice for app installation on a new phone?",
+    options:["Review app ratings and permissions","Install everything at once","Disable security settings first"],
+    correctText:"Review app ratings and permissions",
+    why:"Permission review helps prevent over-privileged apps."
+  },
+
+  // --- Android Security ---
+  {
+    id:"Q9", topic:"Android Security",
     q:"Device encryption mainly protects data:",
-    options:["When the device is lost or powered off","Only when Wi-Fi is on","Only inside browser"],
+    options:["When the device is lost or powered off","Only when Wi-Fi is on","Only inside a browser"],
     correctText:"When the device is lost or powered off",
-    why:"Encryption protects stored data if the device is stolen or offline."
+    why:"Encryption protects stored data, especially when stolen/offline."
   },
-  { id:"Q3", topic:"iOS Security",
+  {
+    id:"Q10", topic:"Android Security",
+    q:"Granting unnecessary app permissions can lead to:",
+    options:["Data leakage and privacy loss","Faster charging","Better speaker sound"],
+    correctText:"Data leakage and privacy loss",
+    why:"Excess permissions can expose contacts, location, files or messages."
+  },
+  {
+    id:"Q11", topic:"Android Security",
+    q:"What is the safest way to install Android apps?",
+    options:["Use Google Play or trusted official sources","Install random APKs from unknown sites","Disable Play Protect"],
+    correctText:"Use Google Play or trusted official sources",
+    why:"Unknown APKs are a common malware delivery method."
+  },
+  {
+    id:"Q12", topic:"Android Security",
+    q:"Rooting an Android phone generally:",
+    options:["Increases attack surface by bypassing protections","Always improves security","Only changes wallpaper features"],
+    correctText:"Increases attack surface by bypassing protections",
+    why:"Rooting weakens sandboxing and security controls."
+  },
+  {
+    id:"Q13", topic:"Android Security",
+    q:"Which built-in protection checks apps and warns about harmful behavior on Android?",
+    options:["Google Play Protect","Bluetooth Pairing","Airplane Mode"],
+    correctText:"Google Play Protect",
+    why:"Play Protect scans apps and helps detect harmful apps."
+  },
+  {
+    id:"Q14", topic:"Android Security",
+    q:"What is a common risk of enabling 'Unknown sources' installation?",
+    options:["Higher chance of installing malware","Better camera performance","Lower data usage"],
+    correctText:"Higher chance of installing malware",
+    why:"Unknown sources allow installation without store screening."
+  },
+  {
+    id:"Q15", topic:"Android Security",
+    q:"A secure screen lock is important because it:",
+    options:["Prevents unauthorized access to device data","Improves network speed","Stops all spam calls"],
+    correctText:"Prevents unauthorized access to device data",
+    why:"Lock screen is the first access control layer."
+  },
+  {
+    id:"Q16", topic:"Android Security",
+    q:"Which action is best if an Android app behaves suspiciously after install?",
+    options:["Uninstall and scan/check permissions","Give it more permissions","Turn off updates permanently"],
+    correctText:"Uninstall and scan/check permissions",
+    why:"Quick removal reduces exposure and stops further misuse."
+  },
+  {
+    id:"Q17", topic:"Android Security",
+    q:"Why is using a pattern lock with visible smudge marks risky?",
+    options:["Attackers can guess the pattern from smudges","It drains battery faster","It reduces storage capacity"],
+    correctText:"Attackers can guess the pattern from smudges",
+    why:"Smudge attacks can reveal common swipe patterns."
+  },
+
+  // --- iOS Security ---
+  {
+    id:"Q18", topic:"iOS Security",
     q:"A strong iPhone passcode improves:",
     options:["Data protection for stored content","Camera quality","Battery capacity"],
     correctText:"Data protection for stored content",
-    why:"Passcode strengthens iOS data protection mechanisms."
+    why:"Passcode is key to iOS data protection mechanisms."
   },
-  { id:"Q4", topic:"Smartphone Security",
-    q:"Public Wi-Fi is risky mainly due to:",
-    options:["Interception and rogue access points","Lower brightness","Extra storage usage"],
-    correctText:"Interception and rogue access points",
-    why:"Public networks can be monitored or spoofed."
-  },
-  { id:"Q5", topic:"Android Security",
-    q:"Unnecessary app permissions can lead to:",
-    options:["Data leakage and privacy loss","Faster charging","Better speaker sound"],
-    correctText:"Data leakage and privacy loss",
-    why:"Excess permissions may expose contacts, location, files, or messages."
-  },
-  { id:"Q6", topic:"iOS Security",
+  {
+    id:"Q19", topic:"iOS Security",
     q:"A key benefit of Find My iPhone is:",
-    options:["Locate and remotely erase a lost phone","Increase download speed","Automatically jailbreak phone"],
+    options:["Locate and remotely erase a lost phone","Increase download speed","Automatically jailbreak the phone"],
     correctText:"Locate and remotely erase a lost phone",
-    why:"It supports location tracking and remote wipe."
+    why:"It helps track and wipe the device to protect data."
+  },
+  {
+    id:"Q20", topic:"iOS Security",
+    q:"Jailbreaking an iPhone typically:",
+    options:["Reduces built-in security restrictions","Is required for encryption","Prevents all malware"],
+    correctText:"Reduces built-in security restrictions",
+    why:"Jailbreak removes Apple restrictions and weakens security model."
+  },
+  {
+    id:"Q21", topic:"iOS Security",
+    q:"Which iOS setting helps reduce unauthorized access after inactivity?",
+    options:["Auto-Lock / Screen timeout","Increase brightness","Disable Wi-Fi"],
+    correctText:"Auto-Lock / Screen timeout",
+    why:"Auto-Lock reduces time window for unattended access."
+  },
+  {
+    id:"Q22", topic:"iOS Security",
+    q:"Which practice best protects Apple ID from takeover?",
+    options:["Enable two-factor authentication","Reuse the same password everywhere","Share OTP with support calls"],
+    correctText:"Enable two-factor authentication",
+    why:"2FA significantly reduces account takeover risk."
+  },
+  {
+    id:"Q23", topic:"iOS Security",
+    q:"Why should you be cautious with configuration profiles on iOS?",
+    options:["They can change security/network settings","They improve battery life","They are required for App Store"],
+    correctText:"They can change security/network settings",
+    why:"Profiles can modify trust, proxy, VPN, and device policies."
+  },
+
+  // --- Mixed / Practical Scenarios ---
+  {
+    id:"Q24", topic:"Smartphone Security",
+    q:"If your phone shows repeated pop-ups asking to 'allow' permissions unexpectedly, you should:",
+    options:["Review permissions and uninstall suspicious apps","Ignore and keep clicking allow","Disable screen lock"],
+    correctText:"Review permissions and uninstall suspicious apps",
+    why:"Unexpected permission prompts often indicate risky apps or adware."
+  },
+  {
+    id:"Q25", topic:"Smartphone Security",
+    q:"Which is the safest approach for storing passwords on a phone?",
+    options:["Use a trusted password manager","Save passwords in plain text notes","Use the same password for all apps"],
+    correctText:"Use a trusted password manager",
+    why:"Password managers store credentials more securely than plain text."
   },
 ];
 
